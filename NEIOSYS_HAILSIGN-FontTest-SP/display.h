@@ -109,6 +109,8 @@ void DISPLAY_Initialize(void);
 void DISPLAY_Task(void);
 DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
 DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string);
+void Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset);
+ 
 
 extern void slog(char *);
 

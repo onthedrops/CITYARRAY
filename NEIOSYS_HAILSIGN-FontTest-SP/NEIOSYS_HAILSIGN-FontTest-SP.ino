@@ -68,72 +68,23 @@ uint32_t neiosysBitmap[32] = {
 };
 
 
-uint32_t fonttestBitmap[128] = {
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000,
-0x00000000, 0x00000000
-
+uint32_t emptyBitmap[64] = {
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
 uint16_t fxBitmap[32] = {
@@ -149,8 +100,8 @@ uint16_t fxBitmap[32] = {
 
 DISPLAY_SBITMAP_1BIT testBitmap = { fxBitmap, 32 };
 DISPLAY_SBITMAP_1BIT *testBitmap2;
-DISPLAY_BITMAP_1BIT neiosysBitmap1Bit = {fonttestBitmap, 16, 128};
-DISPLAY_BITMAP_1BIT *sheerBitmap1Bit;
+//DISPLAY_BITMAP_1BIT neiosysBitmap1Bit = {fonttestBitmap, 16, 128};
+DISPLAY_BITMAP_1BIT emptyBitmap1Bit = { emptyBitmap, 16, 64 };
 
 uint8_t gBrightness = 0x00;
 uint8_t rBrightness = 0x00;
@@ -165,21 +116,14 @@ void setup()
   DISPLAY_Initialize();  
   BCM_Initialize();  
   vled_on();
-  Serial.begin(115200);
-    testBitmap2 = Write_String_1Bit("LoVe U ");
-    
-    sheerBitmap1Bit = Convert_SBitmap(testBitmap2);
+    testBitmap2 = Write_String_1Bit("REMUS IS A CUTE PUPPY ");
+   Serial.begin(115200);
 
-  Serial.println("setup()");
-  for(c=0;c<sheerBitmap1Bit->nColumns;c++) {
-    
-    sprintf(s,"%d %lx",c,sheerBitmap1Bit->dataPtr[c]);
-    Serial.println(s);
-  }
-
-  sprintf(s, "----\nRows: %d Cols: %d",sheerBitmap1Bit->nRows,sheerBitmap1Bit->nColumns);
-  Serial.println(s);
+  sprintf(s,"testBitmap2 cols %d",testBitmap2->nColumns);
   
+   Serial.println(s);
+   
+
  // DISPLAY_Write_String_1Bit(neiosysBitmap1Bit,"SIGHSIGH");
 //---------------------------------------------
 //For testing purpose only
@@ -199,7 +143,8 @@ void setup()
   DISPLAY_Bitmap_Put_8Bit(bitmap1, 16, 64);
   //DISPLAY_Bitmap_Put_1Bit(rBitmap1Bit, gBitmap1Bit);
 //  DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);
-  DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
+//  DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
+  DISPLAY_Bitmap_Put_1Bit(emptyBitmap1Bit, emptyBitmap1Bit);
   DISPLAY_Brightness_Set(rBrightness, gBrightness);
 //BCM_Tmr_Continue();
   DISPLAY_Method_Set(BITMAP_1BIT);
@@ -214,6 +159,7 @@ int displayMethodDelay = 0;
 DISPLAY_METHOD displayMethod = BITMAP_1BIT;
 uint32_t softDelay = 0;
 bool neioFlag = false;
+int scrollInt = 0;
 
 
 // *****************************************************************************
@@ -257,34 +203,20 @@ void loop()
       }
     }
 
-    Bitmap1_Scroll(neiosysBitmap1Bit, LEFT, 1, true);
+    Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, scrollInt++ % testBitmap2->nColumns);
+//    Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, 10);
+ 
+    //Bitmap1_Scroll(neiosysBitmap1Bit, LEFT, 1, true);
     
     displayMethodDelay++;
     if(displayMethodDelay == 250)
     {
-      if(DISPLAY_Method_Get() == BITMAP_8BIT)
-      { 
-        DISPLAY_Method_Set(BITMAP_1BIT);
-        if(neioFlag)
-        {        
-          neioFlag = false;
+      DISPLAY_Method_Set(BITMAP_1BIT);
           displayMethodDelay = 0;
        //   DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);         
-         DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
- 
-        }
-        else
-        {          
-          neioFlag = true;
-          displayMethodDelay = 100;
-          DISPLAY_Bitmap_Put_1Bit(rBitmap1Bit, gBitmap1Bit);  
-        }
-      }
-      else
-      {
-        DISPLAY_Method_Set(BITMAP_8BIT);
-        displayMethodDelay = 200;
-      }  
+//         DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
+           DISPLAY_Bitmap_Put_1Bit(emptyBitmap1Bit, emptyBitmap1Bit);
+
     }
   }
 //---------------------------------------------

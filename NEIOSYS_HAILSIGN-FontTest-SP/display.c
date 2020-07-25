@@ -25,8 +25,11 @@ Copyright (c)
 #include "bsp.h"
 #include "display.h"
 //#include "m38_font.h"
-#include "Minimum_font.h"
-
+//#include "Minimum_font.h"
+//#include "font7x5.h"
+//#include "crackers_font.h"
+//#include "minimumplus1.h"
+#include "hunter.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -407,7 +410,8 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap)
 
 DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
 {
-      int arraySize = sizeof(uint16_t) * (strlen(string) * 9);
+      int width = 6;
+      int arraySize = sizeof(uint16_t) * (strlen(string) * (width + 1));
       
       uint16_t *stringArray = malloc(arraySize);
       memset(stringArray, 0, arraySize);
@@ -416,7 +420,6 @@ DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
       bitmap->nColumns = 0;
       int i;
       int stringPtr;
-      int width = 6;
       
       
      for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
@@ -432,6 +435,94 @@ DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
     return bitmap;
 }
 
+DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string)
+{
+      int arraySize = sizeof(uint16_t) * (strlen(string) * 9);
+      
+      uint16_t *stringArray = malloc(arraySize);
+      memset(stringArray, 0, arraySize);
+      DISPLAY_SBITMAP_1BIT *bitmap = malloc(sizeof(DISPLAY_SBITMAP_1BIT));
+      bitmap->dataPtr = stringArray;
+      bitmap->nColumns = 0;
+      int i;
+      int stringPtr;
+      int width = 6;
+      
+      
+     for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
+         char c = string[stringPtr];
+        
+         for(i=0;i<width;i++) { 
+            *stringArray |= font[c-32][i];
+            stringArray++;
+         }
+         stringArray++;
+         bitmap->nColumns+= (width + 1);
+     }
+
+    return bitmap;
+}
+
+
+Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset)
+{
+    int cols = 64;
+    int local_end = 0;
+    
+//    if((image->nColumns - offset) > 64) {
+       if(offset > 64) {
+        local_end = offset - 64;
+       } else {
+        local_end = 0;
+       }
+ //   } else {
+   //   local_end = ;
+  // }
+
+    char s[64];
+    sprintf(s,"offset %d le: %d",offset, local_end);
+    slog(s);
+    
+    memset(screen.dataPtr, 0, cols * 4);
+    // now we walk the bitmap
+ 
+  int i;
+  int j;
+  int charPtr = 0;
+  uint32_t *dptr = screen.dataPtr;
+  uint32_t *eptr = screen.dataPtr;
+  
+ //   for(i=0;i<bitmap->nColumns;i++) {
+   for(i=offset;i>local_end;i--) {
+      
+  //for(i=0;i<2;i++) {
+    dptr = eptr;
+    
+    for(j=0;j<16;j++) { // for each column in the array
+       uint16_t *p = image->dataPtr;
+       p += i;
+
+       
+       if(*p & ( 1 << j )) { // if the column is turned on
+    //           sprintf(s,"i: %d j: %d on (%d) CP %d",i,j,*p);
+      //        slog(s);
+    
+          *dptr |= (1 << charPtr);
+       }      
+       
+         dptr += (cols / 32);
+      }
+      
+      charPtr++;
+      if(charPtr > 31) {
+        charPtr = 0;
+        eptr++;
+      }
+    } 
+
+}
+
+ 
 /*******************************************************************************
  End of File
 */
