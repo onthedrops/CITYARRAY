@@ -108,7 +108,7 @@ DISPLAY_METHOD DISPLAY_Method_Get(void);
 void DISPLAY_Initialize(void);
 void DISPLAY_Task(void);
 DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
-DISPLAY_SBITMAP_1BIT Write_String_1Bit(char *string);
+DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string);
 
 extern void slog(char *);
 

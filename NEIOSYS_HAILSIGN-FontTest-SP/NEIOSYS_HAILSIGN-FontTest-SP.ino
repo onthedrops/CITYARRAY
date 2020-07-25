@@ -136,15 +136,19 @@ uint32_t fonttestBitmap[128] = {
 
 };
 
-uint16_t fxBitmap[16] = {
+uint16_t fxBitmap[32] = {
   0x0001, 0x0010, 0x0100, 0x1000,
   0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000,
-  0xF000, 0x000F, 0x00FF, 0xFFFF
+  0xF000, 0x000F, 0x00FF, 0xFFFF,
+  0x0000, 0x0000, 0x0000, 0x0000,
+  0x0000, 0x0000, 0x0000, 0x0000,
+  0x0000, 0x0000, 0x0000, 0x0000,
+  0xF000, 0x0F00, 0x00F0, 0x000F
 };
 
-DISPLAY_SBITMAP_1BIT testBitmap = { fxBitmap, 16 };
-
+DISPLAY_SBITMAP_1BIT testBitmap = { fxBitmap, 32 };
+DISPLAY_SBITMAP_1BIT *testBitmap2;
 DISPLAY_BITMAP_1BIT neiosysBitmap1Bit = {fonttestBitmap, 16, 128};
 DISPLAY_BITMAP_1BIT *sheerBitmap1Bit;
 
@@ -162,7 +166,9 @@ void setup()
   BCM_Initialize();  
   vled_on();
   Serial.begin(115200);
-    sheerBitmap1Bit = Convert_SBitmap(&testBitmap);
+    testBitmap2 = Write_String_1Bit("LoVe U ");
+    
+    sheerBitmap1Bit = Convert_SBitmap(testBitmap2);
 
   Serial.println("setup()");
   for(c=0;c<sheerBitmap1Bit->nColumns;c++) {

@@ -24,8 +24,8 @@ Copyright (c)
 #include "bcm.h"
 #include "bsp.h"
 #include "display.h"
-#include "m38_font.h"
-
+//#include "m38_font.h"
+#include "Minimum_font.h"
 
 
 // *****************************************************************************
@@ -366,7 +366,8 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap)
   //uint32_t *eptr;
   char s[64];
   
-    for(i=0;i<bitmap->nColumns;i++) {
+ //   for(i=0;i<bitmap->nColumns;i++) {
+   for(i=bitmap->nColumns;i>=0;i--) {
       
   //for(i=0;i<2;i++) {
     dptr = eptr;
@@ -402,6 +403,33 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap)
   */
  // *dptr |= 0x0000;
   return bptr;
+}
+
+DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
+{
+      int arraySize = sizeof(uint16_t) * (strlen(string) * 9);
+      
+      uint16_t *stringArray = malloc(arraySize);
+      memset(stringArray, 0, arraySize);
+      DISPLAY_SBITMAP_1BIT *bitmap = malloc(sizeof(DISPLAY_SBITMAP_1BIT));
+      bitmap->dataPtr = stringArray;
+      bitmap->nColumns = 0;
+      int i;
+      int stringPtr;
+      int width = 6;
+      
+      
+     for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
+         char c = string[stringPtr];
+         for(i=0;i<width;i++) {
+            *stringArray |= font[c-32][i];
+            stringArray++;
+         }
+         stringArray++;
+         bitmap->nColumns+= (width + 1);
+     }
+
+    return bitmap;
 }
 
 /*******************************************************************************
