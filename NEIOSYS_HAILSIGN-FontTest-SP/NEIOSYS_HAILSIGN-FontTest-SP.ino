@@ -116,7 +116,7 @@ void setup()
   DISPLAY_Initialize();  
   BCM_Initialize();  
   vled_on();
-    testBitmap2 = Write_String_1Bit("REMUS IS A CUTE PUPPY ");
+    testBitmap2 = Write_String_1Bit("ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ./?!#& ");
    Serial.begin(115200);
 
   sprintf(s,"testBitmap2 cols %d",testBitmap2->nColumns);

@@ -29,7 +29,10 @@ Copyright (c)
 //#include "font7x5.h"
 //#include "crackers_font.h"
 //#include "minimumplus1.h"
-#include "hunter.h"
+//#include "HUNTER_16.h"
+//#include "hunter.h"
+#include "arialbd_font_manual.h"
+//#include "ChunkFive-Regular_font.h"
 
 // *****************************************************************************
 // *****************************************************************************
@@ -410,7 +413,7 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap)
 
 DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
 {
-      int width = 6;
+      int width = 12;
       int arraySize = sizeof(uint16_t) * (strlen(string) * (width + 1));
       
       uint16_t *stringArray = malloc(arraySize);
@@ -425,12 +428,16 @@ DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
      for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
          char c = string[stringPtr];
          for(i=0;i<width;i++) {
-            *stringArray |= font[c-32][i];
-            stringArray++;
+            if(font[c-32][i]  || c == ' ') {
+              *stringArray |= font[c-32][i];
+              stringArray++;
+              bitmap->nColumns++;
+            }
          }
          stringArray++;
-         bitmap->nColumns+= (width + 1);
-     }
+         bitmap->nColumns++;
+         
+      }
 
     return bitmap;
 }
@@ -479,9 +486,9 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
    //   local_end = ;
   // }
 
-    char s[64];
-    sprintf(s,"offset %d le: %d",offset, local_end);
-    slog(s);
+//    char s[64];
+  //  sprintf(s,"offset %d le: %d",offset, local_end);
+   // slog(s);
     
     memset(screen.dataPtr, 0, cols * 4);
     // now we walk the bitmap
