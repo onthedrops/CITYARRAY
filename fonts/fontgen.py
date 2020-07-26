@@ -13,6 +13,7 @@
 #
 
 from PIL import Image, ImageFont, ImageDraw
+#from Image import Image, ImageFont, ImageDraw
 import os.path
 
 # MONOSPACE:
@@ -22,7 +23,7 @@ import os.path
 #FONT = {'fname': r'BMplain.ttf', 'size': 7, 'yoff':0, 'w': 6, 'h': 8}
 #FONT = {'fname': r'bubblesstandard.ttf', 'size': 15, 'yoff':-1, 'w': 7, 'h': 8}
 #FONT = {'fname': r'7linedigital.ttf', 'size': 8, 'yoff':0, 'w': 4, 'h': 8}  # 7-seg. NOTE: can't display certain letters like 'M'
-#FONT = {'fname': r'HUNTER.ttf', 'size': 9, 'yoff':-1, 'w': 8, 'h': 8}
+FONT = {'fname': r'HUNTER.ttf', 'size': 17, 'yoff':-1, 'w': 8, 'h': 16}
 #FONT = {'fname': r'm38.ttf', 'size': 8, 'yoff':-0, 'w': 8, 'h': 8}
 #FONT = {'fname': r'formplex12.ttf', 'size': 11, 'yoff':0, 'w': 8, 'h': 8}
 #FONT = {'fname': r'sloth.ttf', 'size': 15, 'yoff':-2, 'w': 6, 'h': 8}
@@ -33,7 +34,7 @@ import os.path
 #FONT = {'fname': r'homespun.ttf', 'size': 9, 'yoff':-1, 'w': 7, 'h': 8}  # Non-monospaced
 #FONT = {'fname': r'zxpix.ttf', 'size': 10, 'yoff':-2, 'w': 6, 'h': 8}
 #FONT = {'fname': r'Minimum.ttf', 'size': 16, 'yoff':-8, 'w': 6, 'h': 8}
-FONT = {'fname': r'Minimum+1.ttf', 'size': 16, 'yoff':-8, 'w': 7, 'h': 8}
+#FONT = {'fname': r'Minimum+1.ttf', 'size': 16, 'yoff':-8, 'w': 7, 'h': 8}
 #FONT = {'fname': r'HISKYF21.ttf', 'size': 9, 'yoff':0, 'w': 6, 'h': 8}
 #FONT = {'fname': r'renew.ttf', 'size': 8, 'yoff':-2, 'w': 7, 'h': 8}
 #FONT = {'fname': r'acme_5_outlines.ttf', 'size': 8, 'yoff':-5, 'w': 6, 'h': 8}
@@ -68,6 +69,7 @@ HEIGHT = CHAR_HEIGHT
 
 img = Image.new("RGBA", (WIDTH, HEIGHT), (255,255,255))
 #fnt = ImageFont.load_default()
+print("loading font: " + FONT_FILE + " width: " + str(WIDTH) + " height: " + str(HEIGHT) + " char width: " + str(CHAR_WIDTH) + " char height " + str(CHAR_HEIGHT))
 fnt = ImageFont.truetype(FONT_FILE, FONT_SIZE)
 
 drw = ImageDraw.Draw(img)
@@ -91,9 +93,9 @@ for i in range(num_chars):
         val = 0
         for y in range(CHAR_HEIGHT):
             rgb = img.getpixel((x,y))
-            val = (val >> 1) | (0x80 if rgb[0] == 0 else 0)
+            val = (val >> 1) | (0x8000 if rgb[0] == 0 else 0)
 
-        ints.append('0x%.2x' % (val))
+        ints.append('0x%.4x' % (val))
     c = FONTSTR[i]
     if c == '\\': c = '"\\"' # bugfix
     f.write('\t{%s}, // %s\n' % (','.join(ints), c))

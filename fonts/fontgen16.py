@@ -23,7 +23,8 @@ import os.path
 #FONT = {'fname': r'BMplain.ttf', 'size': 7, 'yoff':0, 'w': 6, 'h': 8}
 #FONT = {'fname': r'bubblesstandard.ttf', 'size': 15, 'yoff':-1, 'w': 7, 'h': 8}
 #FONT = {'fname': r'7linedigital.ttf', 'size': 8, 'yoff':0, 'w': 4, 'h': 8}  # 7-seg. NOTE: can't display certain letters like 'M'
-FONT = {'fname': r'HUNTER.ttf', 'size': 17, 'yoff':-1, 'w': 8, 'h': 16}
+#FONT = {'fname': r'HUNTER.ttf', 'size': 16, 'yoff':-1, 'w': 8, 'h': 16}
+FONT = {'fname': r'arialbd.ttf', 'size': 16, 'yoff':-1, 'w': 8, 'h': 16}
 #FONT = {'fname': r'm38.ttf', 'size': 8, 'yoff':-0, 'w': 8, 'h': 8}
 #FONT = {'fname': r'formplex12.ttf', 'size': 11, 'yoff':0, 'w': 8, 'h': 8}
 #FONT = {'fname': r'sloth.ttf', 'size': 15, 'yoff':-2, 'w': 6, 'h': 8}
@@ -57,6 +58,7 @@ FONT_BEGIN = ' '
 FONT_END = '~'
 #FONTSTR = ''.join(chr(x).upper() for x in range(ord(FONT_BEGIN), ord(FONT_END)+1))
 FONTSTR = ''.join(chr(x) for x in range(ord(FONT_BEGIN), ord(FONT_END)+1))
+print("FONTSTR: " + FONTSTR);
 
 OUTPUT_NAME = os.path.splitext(FONT_FILE)[0] + '_font'
 OUTPUT_PNG = OUTPUT_NAME + '.png'
@@ -83,7 +85,7 @@ img.save(OUTPUT_PNG)
 #### Convert to C-header format
 f = open(OUTPUT_H, 'w')
 num_chars = len(FONTSTR)
-f.write('const unsigned char font[%d][%d] = {\n' % (num_chars+1, CHAR_WIDTH))
+f.write('const uint16_t font[%d][%d] = {\n' % (num_chars+1, CHAR_WIDTH))
 
 chars = []
 for i in range(num_chars):
