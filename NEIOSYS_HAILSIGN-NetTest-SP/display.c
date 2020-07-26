@@ -532,9 +532,9 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
    //   local_end = ;
   // }
 
-    char s[64];
-    sprintf(s,"offset %d le: %d",offset, local_end);
-    slog(s);
+    //char s[64];
+    //sprintf(s,"offset %d le: %d",offset, local_end);
+    //slog(s);
     
     memset(screen.dataPtr, 0, cols * 4);
     // now we walk the bitmap

@@ -25,7 +25,7 @@ Copyright (c)
 #include "bsp.h"
 #include "display.h"
 //#include "m38_font.h"
-//#include "Minimum_font.h"
+#include "Minimum_font_8.h"
 //#include "font7x5.h"
 //#include "crackers_font.h"
 //#include "minimumplus1.h"
@@ -442,9 +442,20 @@ DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
     return bitmap;
 }
 
-DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string)
+DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
 {
-      int arraySize = sizeof(uint16_t) * (strlen(string) * 9);
+      int maxlen;
+      int s1len = strlen(string);
+      int s2len = strlen(string2);
+      
+      if(s1len > s2len) {
+          maxlen = s1len;
+      } else {
+        maxlen = s2len;
+      }
+      
+      int width = 6;
+      int arraySize = sizeof(uint16_t) * (maxlen * (width+1));
       
       uint16_t *stringArray = malloc(arraySize);
       memset(stringArray, 0, arraySize);
@@ -453,20 +464,51 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string)
       bitmap->nColumns = 0;
       int i;
       int stringPtr;
-      int width = 6;
+      int s1Columns=0;
+      int s2Columns=0;
+      char c, c2;
       
-      
-     for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
-         char c = string[stringPtr];
+     for(stringPtr = 0; stringPtr < s1len; stringPtr++) {
         
+         c = string[stringPtr];
+         
+         if(stringPtr < s2len)
+          c2 = string2[stringPtr];
+          else c2 = ' ';
+           
          for(i=0;i<width;i++) { 
-            *stringArray |= font[c-32][i];
+           if(cfont[c-32][i]  || c == ' ') {
+            *stringArray |= cfont[c-32][i];
             stringArray++;
+              s1Columns++;
+             }
          }
          stringArray++;
-         bitmap->nColumns+= (width + 1);
+         s1Columns++;
      }
 
+    stringArray = bitmap->dataPtr;
+    for(stringPtr = 0; stringPtr < s2len; stringPtr++) {
+        
+         c = string2[stringPtr];
+         
+        
+           
+         for(i=0;i<width;i++) { 
+           if(cfont[c-32][i]  || c == ' ') {
+            *stringArray |= cfont[c-32][i] << 8;
+            stringArray++;
+              s2Columns++;
+             }
+         }
+         stringArray++;
+         s2Columns++;
+     }
+
+      if(s1Columns > s2Columns)
+        bitmap->nColumns = s1Columns;
+      else bitmap->nColumns = s2Columns;
+      
     return bitmap;
 }
 
@@ -500,7 +542,7 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
   uint32_t *eptr = screen.dataPtr;
   
  //   for(i=0;i<bitmap->nColumns;i++) {
-   for(i=offset;i>local_end;i--) {
+   for(i=offset;i>=local_end;i--) {
       
   //for(i=0;i<2;i++) {
     dptr = eptr;
