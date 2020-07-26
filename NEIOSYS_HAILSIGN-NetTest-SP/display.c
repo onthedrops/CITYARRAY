@@ -532,9 +532,9 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
    //   local_end = ;
   // }
 
-//    char s[64];
-  //  sprintf(s,"offset %d le: %d",offset, local_end);
-   // slog(s);
+    char s[64];
+    sprintf(s,"offset %d le: %d",offset, local_end);
+    slog(s);
     
     memset(screen.dataPtr, 0, cols * 4);
     // now we walk the bitmap
@@ -547,25 +547,27 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
   
  //   for(i=0;i<bitmap->nColumns;i++) {
    for(i=offset;i>=local_end;i--) {
+
       
   //for(i=0;i<2;i++) {
     dptr = eptr;
+
+    if(i <= image->nColumns) {
+      
     
-    for(j=0;j<16;j++) { // for each column in the array
-       uint16_t *p = image->dataPtr;
-       p += i;
+        for(j=0;j<16;j++) { // for each column in the array
+          uint16_t *p = image->dataPtr;
+          p += i;
 
        
-       if(*p & ( 1 << j )) { // if the column is turned on
-    //           sprintf(s,"i: %d j: %d on (%d) CP %d",i,j,*p);
-      //        slog(s);
-    
-          *dptr |= (1 << charPtr);
-       }      
+          if(*p & ( 1 << j )) { // if the column is turned on
+              *dptr |= (1 << charPtr);
+          }      
        
-         dptr += (cols / 32);
-      }
-      
+           dptr += (cols / 32);
+        }
+    }
+    
       charPtr++;
       if(charPtr > 31) {
         charPtr = 0;

@@ -7,7 +7,7 @@
 
 #include <WiFi.h>
 #include <HTTPClient.h>
-
+#include <string.h>
 
   
 uint8_t bitmap1[1024];
@@ -274,7 +274,14 @@ void loop()
      if(strcmp((char *)workstring,outputstring)) {
            sprintf(outputstring, "%s", workstring);
            Clear_SBitmap(testBitmap2);
-           testBitmap2 = Write_String_1Bit(outputstring);
+           if(strstr(outputstring,"\n")) {
+                char *line2 = strstr(outputstring,"\n");
+                *line2 = '\0';
+                line2++;
+                testBitmap2 = Write_2HString_1Bit(outputstring,line2);    
+           } else {
+            testBitmap2 = Write_String_1Bit(outputstring);
+           }
      }
       
     softDelay = 0;
@@ -302,21 +309,12 @@ void loop()
       }
     }
 
-    Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, scrollInt++ % testBitmap2->nColumns);
-//    Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, 10);
- 
-    //Bitmap1_Scroll(neiosysBitmap1Bit, LEFT, 1, true);
+    if(testBitmap2->nColumns > 64) 
+      Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, scrollInt++ % testBitmap2->nColumns);
+    else   Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, 63);
+     
     
     displayMethodDelay++;
-    if(displayMethodDelay == 250)
-    {
-      DISPLAY_Method_Set(BITMAP_1BIT);
-          displayMethodDelay = 0;
-       //   DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);         
-//         DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
-           DISPLAY_Bitmap_Put_1Bit(emptyBitmap1Bit, emptyBitmap1Bit);
-
-    }
   }
 //---------------------------------------------
 //For testing purpose only
