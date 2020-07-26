@@ -513,6 +513,10 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
 }
 
 
+void Clear_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap) {
+  free(bitmap->dataPtr);
+  free(bitmap);
+}
 Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset)
 {
     int cols = 64;

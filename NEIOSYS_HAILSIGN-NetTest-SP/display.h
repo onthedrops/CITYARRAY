@@ -112,6 +112,7 @@ DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string);
 DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2);
 
 void Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset);
+void Clear_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
 
  
 

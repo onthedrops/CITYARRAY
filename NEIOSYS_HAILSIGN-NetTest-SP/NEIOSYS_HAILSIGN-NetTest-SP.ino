@@ -140,11 +140,20 @@ void setup()
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
-  BSP_Initialize();
-  DISPLAY_Initialize();  
-  BCM_Initialize();  
-  vled_on();
+ 
+   xTaskCreatePinnedToCore(
+                    networkTask,   // Function to implement the task 
+                    "coreTask", // Name of the task 
+                    10000,      // Stack size in words 
+                    NULL,       // Task input parameter 
+                    0,          // Priority of the task 
+                    NULL,       // Task handle. 
+                    0);  // Core where the task should run 
+  //BCM_Initialize();  
+ 
 
+  initTask(NULL);
+  
  // DISPLAY_Write_String_1Bit(neiosysBitmap1Bit,"SIGHSIGH");
 //---------------------------------------------
 //For testing purpose only
@@ -172,6 +181,66 @@ void setup()
   //Serial.println(ESP.getCpuFreqMHz());
 }
 
+void initTask(void * pvParameters) {
+    Serial.print("initTask starting ");
+
+   BSP_Initialize();
+  DISPLAY_Initialize();  
+  BCM_Initialize();    
+  vled_on();
+    Serial.print("initTask done ");
+
+
+}
+
+char outputstring[256];
+volatile char workstring[256];
+
+void networkTask(void * pvParameters) {
+    disableCore0WDT();
+
+  while(1) {
+      yield();
+
+  if ((millis() - lastTime) > timerDelay) {
+
+    if(WiFi.status()== WL_CONNECTED){
+      HTTPClient http;
+
+      String serverPath = serverName + "?temperature=24.37";
+      
+      // Your Domain name with URL path or IP address with path
+      http.begin(serverPath.c_str());
+      
+      // Send HTTP GET request
+      int httpResponseCode = http.GET();
+      
+      if (httpResponseCode>0) {
+       // Serial.print("HTTP Response code: ");
+       // Serial.println(httpResponseCode);
+        String payload = http.getString();
+       // Serial.println(payload);
+
+        payload.toCharArray((char *)workstring,payload.length());
+        workstring[payload.length()] = 0;
+        
+       
+      } else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+      // Free resources
+      http.end();
+    }
+    else {
+      Serial.println("WiFi Disconnected");
+    }
+        lastTime = millis();
+      }
+  }
+}
+
+
 
 int redBrightnessOffset = 0;
 int greenBrightnessOffset = 1;
@@ -182,8 +251,7 @@ uint32_t softDelay = 0;
 bool neioFlag = false;
 int scrollInt = 0;
 
-char outputstring[256];
-char workstring[256];
+
 
 
 // *****************************************************************************
@@ -203,43 +271,11 @@ void loop()
   if (softDelay == 50000) 
   {
 
-      if ((millis() - lastTime) > timerDelay) {
-
-    if(WiFi.status()== WL_CONNECTED){
-      HTTPClient http;
-
-      String serverPath = serverName + "?temperature=24.37";
-      
-      // Your Domain name with URL path or IP address with path
-      http.begin(serverPath.c_str());
-      
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-      
-      if (httpResponseCode>0) {
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        String payload = http.getString();
-        Serial.println(payload);
-
-        payload.toCharArray(workstring,256);
-        
-        if(strcmp(workstring,outputstring)) {
+     if(strcmp((char *)workstring,outputstring)) {
            sprintf(outputstring, "%s", workstring);
+           Clear_SBitmap(testBitmap2);
            testBitmap2 = Write_String_1Bit(outputstring);
-        }
-      } else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
-      }
-      // Free resources
-      http.end();
-    }
-    else {
-      Serial.println("WiFi Disconnected");
-    }
-        lastTime = millis();
-      }
+     }
       
     softDelay = 0;
     rBrightness += redBrightnessOffset;    
