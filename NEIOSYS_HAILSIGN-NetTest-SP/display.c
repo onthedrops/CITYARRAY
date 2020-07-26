@@ -451,7 +451,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
       if(s1len > s2len) {
           maxlen = s1len;
       } else {
-        maxlen = s2len;
+          maxlen = s2len;
       }
       
       int width = 6;
@@ -471,11 +471,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
      for(stringPtr = 0; stringPtr < s1len; stringPtr++) {
         
          c = string[stringPtr];
-         
-         if(stringPtr < s2len)
-          c2 = string2[stringPtr];
-          else c2 = ' ';
-           
+                    
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
             *stringArray |= cfont[c-32][i];
@@ -496,9 +492,9 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
            
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
-            *stringArray |= cfont[c-32][i] << 8;
-            stringArray++;
-              s2Columns++;
+              *stringArray |= cfont[c-32][i] << 8;
+               stringArray++;
+               s2Columns++;
              }
          }
          stringArray++;

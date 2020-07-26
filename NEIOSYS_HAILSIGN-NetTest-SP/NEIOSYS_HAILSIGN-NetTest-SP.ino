@@ -118,7 +118,6 @@ unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
 
 
-
 int r,c;
 void setup() 
 {
@@ -221,8 +220,8 @@ void networkTask(void * pvParameters) {
         String payload = http.getString();
        // Serial.println(payload);
 
-        payload.toCharArray((char *)workstring,payload.length());
-        workstring[payload.length()] = 0;
+        payload.toCharArray((char *)workstring,payload.length()+1);
+        workstring[payload.length()+1] = 0;
         
        
       } else {
@@ -272,13 +271,19 @@ void loop()
   {
 
      if(strcmp((char *)workstring,outputstring)) {
+        Serial.print("New message: [");
+        Serial.print((char *)workstring);
+        Serial.println("]");
+
            sprintf(outputstring, "%s", workstring);
            Clear_SBitmap(testBitmap2);
            if(strstr(outputstring,"\n")) {
-                char *line2 = strstr(outputstring,"\n");
+                char workBuf[256];
+                sprintf(workBuf, outputstring);
+                char *line2 = strstr(workBuf,"\n");
                 *line2 = '\0';
                 line2++;
-                testBitmap2 = Write_2HString_1Bit(outputstring,line2);    
+                testBitmap2 = Write_2HString_1Bit(workBuf,line2);    
            } else {
             testBitmap2 = Write_String_1Bit(outputstring);
            }
