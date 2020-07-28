@@ -81,6 +81,12 @@ typedef struct {
   uint32_t nColumns;
 } DISPLAY_SBITMAP_1BIT;
 
+typedef struct {
+   uint16_t *dataPtr_red;
+   uint16_t *dataPtr_green;
+   uint32_t nColumns;
+} DISPLAY_SBITMAP_2BIT;
+
 typedef struct
 {
   DISPLAY_STATE state;
@@ -111,8 +117,14 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
 DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string);
 DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2);
 
+DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string);
+DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2);
+
 void Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset);
+void Update_CBitmap_Window(DISPLAY_BITMAP_1BIT screenRed, DISPLAY_BITMAP_1BIT screenGreen, DISPLAY_SBITMAP_2BIT *image, int offset);
+
 void Clear_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
+void Clear_SBitmap2(DISPLAY_SBITMAP_2BIT *bitmap);
 
  
 

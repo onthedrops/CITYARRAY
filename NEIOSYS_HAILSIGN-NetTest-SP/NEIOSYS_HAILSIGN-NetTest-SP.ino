@@ -91,6 +91,45 @@ uint32_t emptyBitmap[64] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000
 };
 
+uint32_t emptyBitmapRed[64] = {
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000
+};
+
+uint32_t emptyBitmapGreen[64] = {
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000,
+0x00000000, 0x00000000, 0x00000000, 0x00000000, 
+0x00000000, 0x00000000, 0x00000000, 0x00000000
+};
+
+
 uint16_t fxBitmap[32] = {
   0x0001, 0x0010, 0x0100, 0x1000,
   0x0000, 0x0000, 0x0000, 0x0000,
@@ -104,16 +143,21 @@ uint16_t fxBitmap[32] = {
 
 DISPLAY_SBITMAP_1BIT testBitmap = { fxBitmap, 32 };
 DISPLAY_SBITMAP_1BIT *testBitmap2;
-//DISPLAY_BITMAP_1BIT neiosysBitmap1Bit = {fonttestBitmap, 16, 128};
-DISPLAY_BITMAP_1BIT emptyBitmap1Bit = { emptyBitmap, 16, 64 };
+DISPLAY_SBITMAP_2BIT *testBitmap3;
 
-uint8_t gBrightness = 0x00;
-uint8_t rBrightness = 0x00;
+//DISPLAY_BITMAP_1BIT neiosysBitmap1Bit = {fonttestBitmap, 16, 128};
+//DISPLAY_BITMAP_1BIT emptyBitmap1Bit = { emptyBitmap, 16, 64 };
+
+DISPLAY_BITMAP_1BIT emptyBitmap1BitRed = { emptyBitmapRed, 16, 64 };
+DISPLAY_BITMAP_1BIT emptyBitmap1BitGreen = { emptyBitmapGreen, 16, 64 };
+
+uint8_t gBrightness = 0xFF;
+uint8_t rBrightness = 0xFF;
 
 static char s[64];
 const char* ssid = "sheer";
 const char* password = "";
-String serverName = "http://10.101.1.3/NS/test.txt";
+String serverName = "http://10.101.1.3/NS/test3.txt";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
 
@@ -123,10 +167,12 @@ void setup()
 {
   
   
-    testBitmap2 = Write_String_1Bit("... WAITING FOR NETWORK ... ");
-    
-    //testBitmap2 = Write_2HString_1Bit("REMUS IS A CUTE PUPPY", "LUNA IS A CUTE PUPPY");
-   Serial.begin(115200);
+   // testBitmap2 = Write_String_1Bit("... WAITING FOR NETWORK ... ");
+
+          testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
+
+
+  Serial.begin(115200);
   Serial.println("Connecting");
 
      WiFi.begin(ssid, NULL);
@@ -139,7 +185,11 @@ void setup()
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
- 
+
+
+#define T __
+
+ #ifdef T
    xTaskCreatePinnedToCore(
                     networkTask,   // Function to implement the task 
                     "coreTask", // Name of the task 
@@ -149,7 +199,7 @@ void setup()
                     NULL,       // Task handle. 
                     0);  // Core where the task should run 
   //BCM_Initialize();  
- 
+ #endif
 
   initTask(NULL);
   
@@ -173,10 +223,12 @@ void setup()
   //DISPLAY_Bitmap_Put_1Bit(rBitmap1Bit, gBitmap1Bit);
 //  DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);
 //  DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
-  DISPLAY_Bitmap_Put_1Bit(emptyBitmap1Bit, emptyBitmap1Bit);
+  DISPLAY_Bitmap_Put_1Bit(emptyBitmap1BitRed, emptyBitmap1BitGreen);
   DISPLAY_Brightness_Set(rBrightness, gBrightness);
 //BCM_Tmr_Continue();
   DISPLAY_Method_Set(BITMAP_1BIT);
+  DISPLAY_Brightness_Set(rBrightness, gBrightness);
+
   //Serial.println(ESP.getCpuFreqMHz());
 }
 
@@ -276,50 +328,55 @@ void loop()
         Serial.println("]");
 
            sprintf(outputstring, "%s", workstring);
-           Clear_SBitmap(testBitmap2);
+           
+           Clear_SBitmap2(testBitmap3);
+           
            if(strstr(outputstring,"\n")) {
+            
                 char workBuf[256];
                 sprintf(workBuf, outputstring);
                 char *line2 = strstr(workBuf,"\n");
+                char *line2_2 = line2;
+                line2_2++;
+                if(*line2_2 == '\0') {
+                    *line2 = '\0';
+                
+                    testBitmap3 = Write_String_2Bit(outputstring);
+                } else {
                 *line2 = '\0';
                 line2++;
-                testBitmap2 = Write_2HString_1Bit(workBuf,line2);    
+                Serial.print("Workbuf:");
+                Serial.print(workBuf);
+                Serial.print("line2:");
+                Serial.print(line2);
+                testBitmap3 = Write_2HString_2Bit(workBuf,line2);    
+                }
            } else {
-            testBitmap2 = Write_String_1Bit(outputstring);
+            testBitmap3 = Write_String_2Bit(outputstring);
            }
      }
       
     softDelay = 0;
-    rBrightness += redBrightnessOffset;    
-    gBrightness += greenBrightnessOffset;
-    DISPLAY_Brightness_Set(rBrightness, gBrightness);
-    if(gBrightness == 0x0F)
-    {
-      greenBrightnessOffset = 0;
-      redBrightnessOffset = 1;
-      if(rBrightness == 0x0F)
-      {        
-        greenBrightnessOffset = -1;
-        redBrightnessOffset = 0;
-      }
-    }
-    if(gBrightness == 0x00)
-    {
-      greenBrightnessOffset = 0;
-      redBrightnessOffset = -1;
-      if(rBrightness == 0x00)
-      {        
-        greenBrightnessOffset = 1;
-        redBrightnessOffset = 0;
-      }
-    }
-
-    if(testBitmap2->nColumns > 64) 
+    
+/*    if(testBitmap2->nColumns > 64) 
       Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, scrollInt++ % testBitmap2->nColumns);
     else   Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, 63);
-     
+  */
+
+     if(testBitmap3->nColumns > 64)
+      Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, scrollInt++ % testBitmap3->nColumns);
+      else Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, 63);
     
     displayMethodDelay++;
+    if(displayMethodDelay == 250)
+    {
+      DISPLAY_Method_Set(BITMAP_1BIT);
+          displayMethodDelay = 0;
+       //   DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);         
+//         DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
+           DISPLAY_Bitmap_Put_1Bit(emptyBitmap1BitRed, emptyBitmap1BitGreen);
+
+    }
   }
 //---------------------------------------------
 //For testing purpose only

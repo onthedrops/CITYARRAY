@@ -411,6 +411,103 @@ DISPLAY_BITMAP_1BIT *Convert_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap)
   return bptr;
 }
 
+int noCommandLen(char *string)
+{
+  int ret = 0;
+  int i;
+  for(i=0;i<= strlen(string);i++) {
+    if((i+1)<strlen(string) && string[i] == '~' && string[i+1] == '!') {
+      i+=2;
+      continue;
+    }
+    ret++;
+  }
+
+  return ret;
+}
+
+DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
+{
+      int width = 12;
+      int arraySize = sizeof(uint16_t) * (noCommandLen(string) * (width + 1));
+
+      uint16_t *stringArrayRed = malloc(arraySize);
+      uint16_t *stringArrayGreen = malloc(arraySize);
+ 
+      memset(stringArrayRed, 0, arraySize);
+      memset(stringArrayGreen, 0, arraySize);
+      
+      DISPLAY_SBITMAP_2BIT *bitmap = malloc(sizeof(DISPLAY_SBITMAP_2BIT));
+      
+      bitmap->dataPtr_red = stringArrayRed;
+      bitmap->dataPtr_green = stringArrayGreen;
+      bitmap->nColumns = 0;
+      
+      int i;
+      int stringPtr;
+      char color = 'R';
+      char s[64];
+      
+      
+      
+     for(stringPtr = 0; stringPtr < strlen(string); stringPtr++) {
+      
+         if((stringPtr+1)<strlen(string) && string[stringPtr] == '~' && string[stringPtr+1] == '!') {
+          
+          char cmd = string[stringPtr+2];
+          
+          slog("Command");
+          
+          switch(cmd) {
+            case 'R':
+              color = 'R';
+              break;
+            case 'G':
+              color = 'G';
+              break;
+            case 'Y':
+              color = 'Y';
+              break;           
+          }
+
+          stringPtr += 2;
+          continue;
+         }
+
+         char c = string[stringPtr];
+         if(c == '\n')
+          continue;
+
+#ifdef STRLOG
+          sprintf(s,"%d -> %c %d",stringPtr, c, c);
+          slog(s);
+#endif
+          
+         for(i=0;i<width;i++) {
+            if(font[c-32][i]  || c == ' ') {
+                switch(color) {
+                  default:
+                  case 'R':  *stringArrayRed |= font[c-32][i]; break;
+                  case 'G':  *stringArrayGreen |= font[c-32][i]; break;
+                  case 'Y':  *stringArrayRed |= font[c-32][i]; 
+                             *stringArrayGreen |= font[c-32][i]; break;
+                }
+                
+              stringArrayRed++;
+              stringArrayGreen++;
+              bitmap->nColumns++;
+            }
+         }
+         
+         stringArrayRed++;
+         stringArrayGreen++;
+         bitmap->nColumns++;
+         
+      }
+
+    return bitmap;
+}
+
 DISPLAY_SBITMAP_1BIT *Write_String_1Bit(char *string)
 {
       int width = 12;
@@ -467,6 +564,8 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
       int s1Columns=0;
       int s2Columns=0;
       char c, c2;
+      char color = 'R';
+      
       
      for(stringPtr = 0; stringPtr < s1len; stringPtr++) {
         
@@ -508,25 +607,168 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
     return bitmap;
 }
 
+DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
+{
+      int maxlen;
+      int s1len = noCommandLen(string);
+      int s2len = noCommandLen(string2);
+      int s1_real_len = strlen(string);
+      int s2_real_len = strlen(string2);
+      
+      if(s1len > s2len) {
+          maxlen = s1len;
+      } else {
+          maxlen = s2len;
+      }
+      
+      int width = 6;
+      int arraySize = sizeof(uint16_t) * (maxlen * (width+1));
+      
+      uint16_t *stringArrayRed = malloc(arraySize);
+      uint16_t *stringArrayGreen = malloc(arraySize);
+      
+      memset(stringArrayRed, 0, arraySize);
+      memset(stringArrayGreen, 0, arraySize);
+      
+      DISPLAY_SBITMAP_2BIT *bitmap = malloc(sizeof(DISPLAY_SBITMAP_2BIT));
+      bitmap->dataPtr_red = stringArrayRed;
+      bitmap->dataPtr_green = stringArrayGreen;
+      bitmap->nColumns = 0;
+      
+      int i;
+      int stringPtr;
+      int s1Columns=0;
+      int s2Columns=0;
+      char c, c2;
+      char color;
+      
+     for(stringPtr = 0; stringPtr < s1_real_len; stringPtr++) {
+
+         if((stringPtr+1)<strlen(string) && string[stringPtr] == '~' && string[stringPtr+1] == '!') {
+          
+          char cmd = string[stringPtr+2];
+          
+          slog("Command");
+          
+          switch(cmd) {
+            case 'R':
+              color = 'R';
+              break;
+            case 'G':
+              color = 'G';
+              break;
+            case 'Y':
+              color = 'Y';
+              break;           
+          }
+
+          stringPtr += 2;
+          continue;
+         }
+         
+         c = string[stringPtr];
+                    
+         for(i=0;i<width;i++) { 
+           if(cfont[c-32][i]  || c == ' ') {
+            switch(color) {
+              default:
+              case 'R': *stringArrayRed |= cfont[c-32][i] ; break;
+              case 'G': *stringArrayGreen |= cfont[c-32][i] ; break;
+              case 'Y': *stringArrayRed |= cfont[c-32][i] ;
+                        *stringArrayGreen |= cfont[c-32][i] ; break;
+            }
+            
+            stringArrayRed++;
+            stringArrayGreen++;
+              s1Columns++;
+             }
+         }
+         
+         stringArrayRed++;
+         stringArrayGreen++;
+         s1Columns++;
+     }
+
+    stringArrayRed = bitmap->dataPtr_red;
+    stringArrayGreen = bitmap->dataPtr_green;
+    
+    for(stringPtr = 0; stringPtr < s2_real_len; stringPtr++) {
+        
+         c = string2[stringPtr];
+
+          if((stringPtr+1)<strlen(string2) && string2[stringPtr] == '~' && string2[stringPtr+1] == '!') {
+          
+          char cmd = string2[stringPtr+2];
+          
+          slog("Command");
+          
+          switch(cmd) {
+            case 'R':
+              color = 'R';
+              break;
+            case 'G':
+              color = 'G';
+              break;
+            case 'Y':
+              color = 'Y';
+              break;           
+          }
+
+          stringPtr += 2;
+          continue;
+         }
+        
+           
+         for(i=0;i<width;i++) { 
+           if(cfont[c-32][i]  || c == ' ') {
+              switch(color) {
+                  default:
+                  case 'R':              *stringArrayRed |= cfont[c-32][i] << 8; break;
+                  case 'G':               *stringArrayGreen |= cfont[c-32][i] << 8; break;
+                  case 'Y':               *stringArrayRed |= cfont[c-32][i] << 8;
+                                           *stringArrayGreen |= cfont[c-32][i] << 8; break;
+                  
+              }
+               stringArrayRed++;
+               stringArrayGreen++;
+               s2Columns++;
+             }
+         }
+         stringArrayRed++;
+         stringArrayGreen++;
+         s2Columns++;
+     }
+
+      if(s1Columns > s2Columns)
+        bitmap->nColumns = s1Columns;
+      else bitmap->nColumns = s2Columns;
+      
+    return bitmap;
+}
+
 
 void Clear_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap) {
   free(bitmap->dataPtr);
   free(bitmap);
 }
+
+void Clear_SBitmap2(DISPLAY_SBITMAP_2BIT *bitmap) {
+  free(bitmap->dataPtr_red);
+  free(bitmap->dataPtr_green);
+  free(bitmap);
+}
+
+
 Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int offset)
 {
     int cols = 64;
     int local_end = 0;
     
-//    if((image->nColumns - offset) > 64) {
-       if(offset > 64) {
+     if(offset > 64) {
         local_end = offset - 64;
-       } else {
+     } else {
         local_end = 0;
-       }
- //   } else {
-   //   local_end = ;
-  // }
+     }
 
     //char s[64];
     //sprintf(s,"offset %d le: %d",offset, local_end);
@@ -541,12 +783,9 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
   uint32_t *dptr = screen.dataPtr;
   uint32_t *eptr = screen.dataPtr;
   
- //   for(i=0;i<bitmap->nColumns;i++) {
    for(i=offset;i>=local_end;i--) {
 
-      
-  //for(i=0;i<2;i++) {
-    dptr = eptr;
+   dptr = eptr;
 
     if(i <= image->nColumns) {
       
@@ -568,6 +807,77 @@ Update_Bitmap_Window(DISPLAY_BITMAP_1BIT screen,DISPLAY_SBITMAP_1BIT *image, int
       if(charPtr > 31) {
         charPtr = 0;
         eptr++;
+      }
+    } 
+
+}
+
+
+void Update_CBitmap_Window(DISPLAY_BITMAP_1BIT screenRed, DISPLAY_BITMAP_1BIT screenGreen, DISPLAY_SBITMAP_2BIT *image, int offset)
+{
+    int cols = 64;
+    int local_end = 0;
+    
+     if(offset > 64) {
+        local_end = offset - 64;
+     } else {
+        local_end = 0;
+     }
+
+#ifdef SCROLLOG
+    char s[64];
+    sprintf(s,"offset %d le: %d",offset, local_end);
+    slog(s);
+#endif
+    
+    
+    memset(screenRed.dataPtr, 0, cols * 4);
+    memset(screenGreen.dataPtr, 0, cols * 4);
+    
+    // now we walk the bitmap
+ 
+  int i;
+  int j;
+  int charPtr = 0;
+  uint32_t *dptrRed = screenRed.dataPtr;
+  uint32_t *eptrRed = screenRed.dataPtr;
+
+  uint32_t *dptrGreen = screenGreen.dataPtr;
+  uint32_t *eptrGreen = screenGreen.dataPtr;
+  
+   for(i=offset;i>=local_end;i--) {
+
+   dptrRed = eptrRed;
+   dptrGreen = eptrGreen;
+   
+    if(i <= image->nColumns) {
+      
+    
+        for(j=0;j<16;j++) { // for each column in the array
+          uint16_t *p = image->dataPtr_red;
+          uint16_t *q = image->dataPtr_green;
+          
+          p += i;
+          q += i;
+       
+          if(*p & ( 1 << j )) { // if the column is turned on
+              *dptrRed |= (1 << charPtr);
+          }      
+
+          if(*q & (1 << j)) {
+              *dptrGreen |= (1 << charPtr);
+          }
+       
+           dptrRed += (cols / 32);
+           dptrGreen += (cols / 32);
+        }
+    }
+    
+      charPtr++;
+      if(charPtr > 31) {
+        charPtr = 0;
+        eptrRed++;
+        eptrGreen++;
       }
     } 
 
