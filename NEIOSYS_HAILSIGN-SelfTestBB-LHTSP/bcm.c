@@ -115,6 +115,13 @@ void BCM_Tick(void)
     bcm_precision_bit_update();
 }
 
+int BCM_OK(void)
+{
+  if(bcm.bcmTimerTickCount == (BRIGHTNESS_PRECISION_BITS - 1))
+    return 1;
+  return 0;
+}
+
 /*******************************************************************************
  End of File
 */

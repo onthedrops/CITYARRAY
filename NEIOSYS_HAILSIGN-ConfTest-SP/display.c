@@ -187,6 +187,11 @@ void DISPLAY_Initialize(void)
 
 void DISPLAY_Task(void)
 {
+
+#ifndef INTERRUPT_MODE
+  BCM_Tick();
+#endif
+  
   switch(displayData.state)
   {
     case DISPLAY_STATE_INIT:
@@ -456,8 +461,6 @@ DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
           
           char cmd = string[stringPtr+2];
           
-          slog("Command");
-          
           switch(cmd) {
             case 'R':
               color = 'R';
@@ -648,8 +651,6 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
           
           char cmd = string[stringPtr+2];
           
-          slog("Command");
-          
           switch(cmd) {
             case 'R':
               color = 'R';
@@ -699,9 +700,7 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
           if((stringPtr+1)<strlen(string2) && string2[stringPtr] == '~' && string2[stringPtr+1] == '!') {
           
           char cmd = string2[stringPtr+2];
-          
-          slog("Command");
-          
+      
           switch(cmd) {
             case 'R':
               color = 'R';

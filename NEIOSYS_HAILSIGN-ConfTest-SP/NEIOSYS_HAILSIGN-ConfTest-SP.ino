@@ -15,85 +15,6 @@
   
 uint8_t bitmap1[1024];
 
-uint32_t rBitmap1[32] = {
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF,
-0xFFFFFFFF,0x0000FFFF, 
-0xFFFFFFFF,0x0000FFFF   
-};
-DISPLAY_BITMAP_1BIT rBitmap1Bit = {rBitmap1, 16, 64};
-
-uint32_t gBitmap1[32] = {
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF,
-0xFFFF0000,0xFFFFFFFF
-};
-DISPLAY_BITMAP_1BIT gBitmap1Bit = {gBitmap1, 16, 64};
-
-uint32_t neiosysBitmap[32] = {
-0x00000000, 0x00000000,
-0x00000000, 0x000FFFF0,
-0x00000000, 0x00088BD0,
-0x00000000, 0x0008CA10,
-0x00000000, 0x000BAFD0,
-0xD13DF7D1, 0x00089A13,
-0x1140441B, 0x00088A14,
-0x11404415, 0x00088BD4,
-0x8A384795, 0x00080013,
-0x44044411, 0x00089C10,
-0x44044411, 0x0008A210,
-0x847847D1, 0x0008A217,
-0x00000000, 0x0008A210,
-0x00000000, 0x0008A210,
-0x00000000, 0x00089C10,
-0x00000000, 0x000FFFF0,
-};
-
-
-uint32_t emptyBitmap[64] = {
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000, 
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000, 
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000, 
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
-0x00000000, 0x00000000, 0x00000000, 0x00000000, 
-0x00000000, 0x00000000, 0x00000000, 0x00000000
-};
-
 uint32_t emptyBitmapRed[64] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -164,6 +85,9 @@ String serverName = "http://10.101.1.3/NS/test.txt";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
 
+BluetoothSerial SerialBT;
+#define T __
+
 
 int r,c;
 void setup() 
@@ -176,11 +100,13 @@ void setup()
 
 
   Serial.begin(115200);
+  SerialBT.begin("SIGN");   
   Serial.println("Connecting");
 
+#ifdef T
      WiFi.begin(ssid, NULL);
   Serial.println("Connecting 2");
-     
+
   while(WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -188,14 +114,18 @@ void setup()
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
-
-
-#define T __
+#endif
+  
+/*
+   if(!SerialBT.begin("ESP32")){
+    Serial.println("An error occurred initializing Bluetooth");
+   }
+*/
 
  #ifdef T
    xTaskCreatePinnedToCore(
                     networkTask,   // Function to implement the task 
-                    "coreTask", // Name of the task 
+                    "netTask", // Name of the task 
                     10000,      // Stack size in words 
                     NULL,       // Task input parameter 
                     0,          // Priority of the task 
@@ -205,33 +135,14 @@ void setup()
  #endif
 
   initTask(NULL);
-  
- // DISPLAY_Write_String_1Bit(neiosysBitmap1Bit,"SIGHSIGH");
-//---------------------------------------------
-//For testing purpose only
-//---------------------------------------------
-  for(c = 0; c < 16; c++)
-  {    
-    bitmap1[c + 4*64] = c;
-    bitmap1[c + 8*64] = c << 4;
-    bitmap1[c + 12*64] = (c << 4) | c;
-  } 
-  
-  for(c = 0; c < 256; c++)
-  {    
-    bitmap1[c%16 + 32 + c/16*64] = c;
-  }  
+
 
   DISPLAY_Bitmap_Put_8Bit(bitmap1, 16, 64);
-  //DISPLAY_Bitmap_Put_1Bit(rBitmap1Bit, gBitmap1Bit);
-//  DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);
-//  DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
   DISPLAY_Bitmap_Put_1Bit(emptyBitmap1BitRed, emptyBitmap1BitGreen);
   DISPLAY_Brightness_Set(rBrightness, gBrightness);
-//BCM_Tmr_Continue();
   DISPLAY_Method_Set(BITMAP_1BIT);
   DISPLAY_Brightness_Set(rBrightness, gBrightness);
-
+  
   //Serial.println(ESP.getCpuFreqMHz());
 }
 
@@ -243,21 +154,28 @@ void initTask(void * pvParameters) {
   BCM_Initialize();    
   vled_on();
     Serial.print("initTask done ");
-
-
+ 
 }
 
 char outputstring[256];
 volatile char workstring[256];
+char inputstring[256];
+char readchar;
+
+int inputPtr = 0;
 
 void networkTask(void * pvParameters) {
-    disableCore0WDT();
-
+    //disableCore0WDT();
+    
   while(1) {
-      yield();
-
+    //  feedLoopWDT();
+      delay(10);
+      
+  
+  
   if ((millis() - lastTime) > timerDelay) {
 
+      
     if(WiFi.status()== WL_CONNECTED){
       HTTPClient http;
 
@@ -322,9 +240,14 @@ void loop()
 //For testing purpose only
 //---------------------------------------------
   softDelay++; 
-  if (softDelay == 50000) 
+  if (softDelay >= 50000) 
   {
 
+    if(SerialBT.available()) {
+      readchar = SerialBT.read();
+      Serial.println("read");
+    }
+ 
      if(strcmp((char *)workstring,outputstring)) {
         Serial.print("New message: [");
         Serial.print((char *)workstring);

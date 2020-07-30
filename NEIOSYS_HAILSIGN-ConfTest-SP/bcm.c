@@ -21,6 +21,7 @@
 
 static BCM_DATA bcmData;
 
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Application Callback Functions
@@ -29,12 +30,16 @@ static BCM_DATA bcmData;
  
 void IRAM_ATTR bcm_precision_bit_update(void) 
 {  
+
+#ifdef INTERRUPT_MODE
   timerAlarmDisable(bcmData.bcmTimer);  
-  if(bcmData.bcmCurrentBit == (BRIGHTNESS_PRECISION_BITS - 1))
+#endif
+
+  if(bcmData.bcmCurrentBit == BRIGHTNESS_PRECISION_BITS_MINUS_1)
   {
     bcmData.bcmCurrentBit = 0;//reset brightness bit back to 0 when reach the highest bit
     bcmData.bcmTimerTickCount = FIRST_BCM_BIT_TICK_COUNT;
-    if(bcmData.bcmRow == (MODULE_RESOLUTION_Y - 1))//
+    if(bcmData.bcmRow == MODULE_RESOLUTION_Y_MINUS_1)//
       bcmData.bcmRow = 0;
     else
       bcmData.bcmRow++;
@@ -44,10 +49,19 @@ void IRAM_ATTR bcm_precision_bit_update(void)
     bcmData.bcmCurrentBit++;
     bcmData.bcmTimerTickCount <<= 1;//double tick counts when precision bit increase
   }  
-  BCM_Bit_Complete_Flag_Set();//bcmData.bcmBitCompleteFlag = true;
+
+    bcmData.bcmBitCompleteFlag = true;
   
-  //if(DISPLAY_Method_Get() == BITMAP_1BIT)
-    BCM_Tmr_Continue();
+#ifdef INTERRUPT_MODE
+  timerAlarmWrite(bcmData.bcmTimer, bcmData.bcmTimerTickCount, false);
+#endif
+
+  timerWrite(bcmData.bcmTimer, 0);//reset timer count to 0
+
+#ifdef INTERRUPT_MODE
+  timerAlarmEnable(bcmData.bcmTimer);
+#endif
+
 }
 
 // *****************************************************************************
@@ -83,9 +97,15 @@ uint32_t BCM_Row_Get()
 
 void BCM_Tmr_Continue()
 {  
+#ifdef INTERRUPT_MODE
   timerAlarmWrite(bcmData.bcmTimer, bcmData.bcmTimerTickCount, false);
+#endif
+  
   timerWrite(bcmData.bcmTimer, 0);//reset timer count to 0
+  
+#ifdef INTERRUPT_MODE
   timerAlarmEnable(bcmData.bcmTimer);
+#endif
 }
 
 // *****************************************************************************
@@ -103,10 +123,34 @@ void BCM_Initialize(void) //DO NOT CHANGE THE ORDER OF THESE INITIAL FUNCTIONS!!
   bcmData.bcmCurrentBit = 0;
   bcmData.bcmTimerTickCount = FIRST_BCM_BIT_TICK_COUNT;
   bcmData.bcmTimer = timerBegin(0, 240, true);//prescale 240 (1 Mhz), CPU freq. 240MHz
+#ifdef INTERRUPT_MODE
   timerAttachInterrupt(bcmData.bcmTimer, &bcm_precision_bit_update, true);
   timerAlarmWrite(bcmData.bcmTimer, bcmData.bcmTimerTickCount, false);
   timerAlarmEnable(bcmData.bcmTimer);
+#endif
 }
+
+#ifndef INTERRUPT_MODE
+void BCM_Tick(void)
+{
+  uint64_t timerValue = timerRead(bcmData.bcmTimer);
+  if(timerValue >= bcmData.bcmTimerTickCount)
+    bcm_precision_bit_update();
+}
+
+int BCM_OK(void)
+{
+  if(bcmData.bcmTimerTickCount == (BRIGHTNESS_PRECISION_BITS - 1))
+    return 1;
+  return 0;
+}
+
+#else
+int BCM_OK(void)
+{
+  return 1;
+}
+#endif
 
 /*******************************************************************************
  End of File

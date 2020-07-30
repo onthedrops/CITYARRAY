@@ -68,6 +68,7 @@ void BCM_Tmr_Continue();
 uint32_t BCM_Row_Get();
 
 void BCM_Initialize(void);
+int BCM_OK(void);
 
 #ifdef  __cplusplus
 }

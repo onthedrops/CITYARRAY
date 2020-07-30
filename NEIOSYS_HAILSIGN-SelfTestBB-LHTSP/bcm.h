@@ -66,6 +66,7 @@ bool BCM_Bit_Complete_Flag_Get();
 int BCM_Current_Bit_Get();
 void BCM_Tmr_Continue();
 uint32_t BCM_Row_Get();
+int BCM_OK(void);
 
 void BCM_Initialize(void);
 

@@ -54,13 +54,17 @@ extern "C" {
 // *****************************************************************************
 // *****************************************************************************
 #define MODULE_RESOLUTION_X 64
+#define MODULE_RESOLUTION_X_MINUS_1 63
+
 #define MODULE_RESOLUTION_Y 16
+#define MODULE_RESOLUTION_Y_MINUS_1 15
 
 //sign resolutions should be variables......
 #define SIGN_RESOLUTION_X 64
 #define SIGN_RESOLUTION_Y 16
 
 #define BRIGHTNESS_PRECISION_BITS 4
+#define BRIGHTNESS_PRECISION_BITS_MINUS_1 3
 
 #ifdef  __cplusplus
 }
