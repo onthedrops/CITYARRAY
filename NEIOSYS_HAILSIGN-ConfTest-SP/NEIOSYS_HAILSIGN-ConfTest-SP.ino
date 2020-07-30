@@ -83,7 +83,7 @@ uint8_t rBrightness = 0xFF;
 static char s[64];
 const char* ssid = "sheer";
 const char* password = "";
-String serverName = "http://10.101.1.3/NS/test.txt";
+String serverName = "http://10.101.1.3/NS/test3.txt";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
 
@@ -228,7 +228,7 @@ DISPLAY_METHOD displayMethod = BITMAP_1BIT;
 uint32_t softDelay = 0;
 bool neioFlag = false;
 int scrollInt = 0;
-
+int scrollVal = 1;
 
 
 
@@ -272,7 +272,13 @@ void loop()
            Clear_SBitmap2(testBitmap3);
            
            if(strstr(outputstring,"\n")) {
-            
+
+                if(strstr(outputstring,"~!<")) {
+                  scrollVal = -1;  
+                } else if(strstr(outputstring,"~!>")) {
+                  scrollVal = 1;
+                }
+                
                 char workBuf[256];
                 sprintf(workBuf, outputstring);
                 char *line2 = strstr(workBuf,"\n");
@@ -304,8 +310,10 @@ void loop()
   */
 
      if(testBitmap3->nColumns > 64)
-      Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, scrollInt++ % testBitmap3->nColumns);
+      Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, scrollInt % testBitmap3->nColumns);
       else Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, 63);
+
+    scrollInt += scrollVal;
     
     displayMethodDelay++;
     if(displayMethodDelay == 250)
