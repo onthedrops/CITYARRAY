@@ -4,6 +4,8 @@
 #include "bsp.h"
 #include "bcm.h"
 #include "display.h"
+#include "command.h"
+#include "config.h"
 
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -96,10 +98,12 @@ void setup()
   
    // testBitmap2 = Write_String_1Bit("... WAITING FOR NETWORK ... ");
 
-          testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
-
 
   Serial.begin(115200);
+  Serial.println("Initializing");
+  delay(500);
+  setupNVS();
+
   SerialBT.begin("SIGN");   
   Serial.println("Connecting");
 
@@ -115,6 +119,8 @@ void setup()
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
 #endif
+          
+  testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
   
 /*
    if(!SerialBT.begin("ESP32")){
@@ -245,7 +251,15 @@ void loop()
 
     if(SerialBT.available()) {
       readchar = SerialBT.read();
-      Serial.println("read");
+ 
+      if(readchar == '\n' || readchar == '\r') {
+        processCommand(inputstring);
+        
+         inputPtr = 0;        
+      } else {
+        inputstring[inputPtr++] = readchar;
+        inputstring[inputPtr] = '\0';
+      }
     }
  
      if(strcmp((char *)workstring,outputstring)) {
@@ -312,6 +326,21 @@ void loop()
 void slog(char *p)
 {
    Serial.println(p);
+}
+
+void sendBT(char *p)
+{
+  SerialBT.print(p);
+}
+
+void sendlineBT(char *p)
+{
+  SerialBT.println(p);
+}
+
+void reboot()
+{
+    ESP.restart();
 }
 
 /*******************************************************************************
