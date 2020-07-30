@@ -240,7 +240,7 @@ void loop()
 //For testing purpose only
 //---------------------------------------------
   softDelay++; 
-  if (softDelay >= 50000) 
+  if (softDelay >= 50000 && BCM_OK()) 
   {
 
     if(SerialBT.available()) {

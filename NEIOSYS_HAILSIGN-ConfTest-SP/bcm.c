@@ -140,7 +140,7 @@ void BCM_Tick(void)
 
 int BCM_OK(void)
 {
-  if(bcmData.bcmTimerTickCount == (BRIGHTNESS_PRECISION_BITS - 1))
+  if(bcmData.bcmTimerTickCount > 2)
     return 1;
   return 0;
 }
