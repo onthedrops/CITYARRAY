@@ -102,23 +102,14 @@ void setup()
   Serial.begin(115200);
   Serial.println("Initializing");
   delay(500);
+  
   setupNVS();
-
-  SerialBT.begin("SIGN");   
+  loadConfig();
+  
+  SerialBT.begin(signConfig.signID);   
   Serial.println("Connecting");
 
-#ifdef T
-     WiFi.begin(ssid, NULL);
-  Serial.println("Connecting 2");
 
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected to WiFi network with IP Address: ");
-  Serial.println(WiFi.localIP());
-#endif
           
   testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
   
@@ -169,56 +160,76 @@ char inputstring[256];
 char readchar;
 
 int inputPtr = 0;
+int networkState = 0;
 
 void networkTask(void * pvParameters) {
     //disableCore0WDT();
+    WiFi.setAutoReconnect(true);
     
   while(1) {
     //  feedLoopWDT();
       delay(10);
-      
-  
-  
-  if ((millis() - lastTime) > timerDelay) {
-
-      
-    if(WiFi.status()== WL_CONNECTED){
-      HTTPClient http;
-
-      String serverPath = serverName + "?temperature=24.37";
-      
-      // Your Domain name with URL path or IP address with path
-      http.begin(serverPath.c_str());
-      
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-      
-      if (httpResponseCode>0) {
-       // Serial.print("HTTP Response code: ");
-       // Serial.println(httpResponseCode);
-        String payload = http.getString();
-       // Serial.println(payload);
-
-        payload.toCharArray((char *)workstring,payload.length()+1);
-        workstring[payload.length()+1] = 0;
         
-       
-      } else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
-      }
-      // Free resources
-      http.end();
-    }
-    else {
-      Serial.println("WiFi Disconnected");
-    }
-        lastTime = millis();
-      }
-  }
-}
+      switch(networkState) {
+        
+         case 0:    if(signConfig.ssid) {
+ 
+                       if(WiFi.status() == WL_CONNECTED) {
+                          networkState = 2;             
+                        } else {
+                          WiFi.begin(signConfig.ssid, signConfig.password);
+                          Serial.println("Connecting");
+                          networkState = 1;
+                        } 
+                    
+                      lastTime = millis();
+                    }
+                    break;
+         case 1:    
+                    if(WiFi.status() == WL_CONNECTED) {
+                        networkState = 2; 
+                        Serial.println("Connected");  
+                    }
+                    
+                     if ((millis() - lastTime) > 10000) {
+                      WiFi.disconnect();
+                      networkState = 0;
+                    }
+                    
+                    break;     
+         case 2:    if ((millis() - lastTime) > timerDelay) {
+                        if(WiFi.status() != WL_CONNECTED) {
+                        networkState = 0;
+                    } else {
+                       if(signConfig.fetchHost) {
+                         char workbuf[256];
+                        
+                         HTTPClient http;
 
+                         sprintf(workbuf, "%s?signId=%s",signConfig.fetchHost, signConfig.signID);
+                         http.begin(workbuf);
 
+                         Serial.print("Fetching from ");
+                         Serial.println(workbuf);
+                        
+                         int httpResponseCode = http.GET();
+      
+                         if (httpResponseCode>0) {
+                            String payload = http.getString();
+
+                            payload.toCharArray((char *)workstring,payload.length()+1);
+                            workstring[payload.length()+1] = 0;
+                         } 
+                         
+                         http.end();
+                       }
+                      
+                     }
+                     lastTime = millis();
+                  }
+      } // end switch
+  } // end while 1
+} // end task
 
 int redBrightnessOffset = 0;
 int greenBrightnessOffset = 1;

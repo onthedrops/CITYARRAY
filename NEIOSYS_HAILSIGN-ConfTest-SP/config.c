@@ -10,6 +10,7 @@
 // todo: error handling
 
 nvs_handle my_nvs_handle;
+
  
 void setupNVS()
 {
@@ -24,6 +25,34 @@ void setupNVS()
      err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
 }
 
+void loadConfig()
+{
+  // first, get the bluetooth ID key. If it doesn't exist, create one
+  int signId = 0;
+  
+  signConfig.ssid = getConfigKey("ssid");
+  signConfig.password = getConfigKey("password");
+
+  if(signConfig.password && !strcmp(signConfig.password, "~!EMPTY")) {
+    free(signConfig.password);
+    signConfig.password = NULL;
+  }
+
+  signConfig.bluetoothID = getConfigKey("bluetoothID");
+  if(!signConfig.bluetoothID) {
+    char workbuf[64];
+    signId = rand();
+    sprintf(workbuf,"SIGN-%d",signId);
+    putConfigKey("bluetoothID",workbuf);
+    sprintf(workbuf,"%d",signId);
+    putConfigKey("signID",workbuf);
+  }
+  
+  signConfig.bluetoothID = getConfigKey("bluetoothID");
+  signConfig.signID = getConfigKey("signID");
+  signConfig.fetchHost = getConfigKey("fetchHost"); 
+
+}
 char *getConfigKey(char *key)
 {
     size_t required_size;

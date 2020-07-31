@@ -20,6 +20,19 @@ void setupNVS();
 
 char *getConfigKey(char *key);
 void putConfigKey(char *key, char *value);
+void loadConfig();
+
+typedef struct
+{
+  char *ssid;
+  char *password;
+  char *bluetoothID;
+  char *fetchHost;
+  char *signID;
+  
+} CONFIG;
+
+CONFIG signConfig;
 
 #ifdef  __cplusplus
 }
