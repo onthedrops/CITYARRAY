@@ -5,4 +5,8 @@ CREATE TABLE users (
 	userPassword varchar(128)
 );
 
+
+INSERT INTO users VALUES (NULL,'sheer',sha1('vicky'));
+INSERT INTO users VALUES (NULL,'eben',sha1('rey'));
+
 	
