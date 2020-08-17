@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo -n "Test: "
+
+curl http://localhost/msg.php?netpw=bad\&signId=0 2>&1
+echo ""

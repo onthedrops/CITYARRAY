@@ -1,0 +1,12 @@
+#!/usr/bin/php
+<?php
+
+include_once('../www/lib/mysqlng.inc.php');
+
+$sql = new SQLng();
+
+$res = $sql->selectOne("SELECT networkId FROM signNetworks WHERE networkId = '1' AND networkPassword = SHA1('ebenrey')");
+print "res: [$res]\n";
+
+
+
