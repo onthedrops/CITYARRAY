@@ -2,6 +2,8 @@
 
 	require('header.inc.php');
 
+	
+	
 	// display list of signs
 	
 ?>
@@ -11,11 +13,20 @@
 		<SELECT ID="selIndividual">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
+	
+		$signList = User::getInstance()->getSigns();
+		foreach($signList as $id => $name) {
+			echo "\t\t<OPTION VALUE=\"$id\">$name</OPTION>\n";
+		}
 
 ?>
 		</SELECT></TD><TD>Group of signs</TD><TD><SELECT ID="selGroup">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
+		$groupList = User::getInstance()->getSignGroups();
+		foreach($groupList as $id => $name) {
+			echo "\t\t<OPTION VALUE=\"$id\">$name</OPTION>\n";
+		}
 
 ?>
 	</SELECT>
