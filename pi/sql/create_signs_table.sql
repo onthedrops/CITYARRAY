@@ -23,7 +23,7 @@ INSERT INTO messages VALUES (NULL,'~!GTest Message', NOW());
 
 DROP TABLE IF EXISTS signMessage;
 CREATE TABLE signMessage (
-	signId int not null,
+	signId int unique key not null,
 	messageId int not null,
 	setDate datetime,
 	firstShownDate datetime,

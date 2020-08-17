@@ -172,7 +172,10 @@ function equote($string, $autonull=true) {
     }
 
     #$this->Record = @mysql_fetch_array($this->Query_ID);
-    $this->Record = mysqli_fetch_assoc($this->Result);
+    #$this->Record = mysqli_fetch_assoc($this->Result);
+   
+    $this->Record = mysqli_fetch_array($this->Result);
+
     $this->Row   += 1;
     $this->Errno  = $this->Link_ID->errno;
     $this->Error  = $this->Link_ID->errno;
