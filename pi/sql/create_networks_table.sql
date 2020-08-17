@@ -7,6 +7,16 @@ CREATE TABLE signNetworks (
 
 INSERT INTO signNetworks VALUES (NULL,'neiosys',sha1('ebenrey'));
 
+DROP TABLE IF EXISTS signsXnetworks;
+CREATE TABLE signsXnetworks (
+	signsXnetworksId int not null auto_increment primary key,
+	signId int not null,
+	networkId int not null
+);
+
+INSERT INTO signsXnetworks VALUES (NULL,1,1);
+INSERT INTO signsXnetworks VALUES (NULL,2,1);
+
 
 DROP TABLE IF EXISTS signGroups;
 CREATE TABLE signGroups (

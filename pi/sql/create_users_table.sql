@@ -9,4 +9,16 @@ CREATE TABLE users (
 INSERT INTO users VALUES (NULL,'sheer',sha1('vicky'));
 INSERT INTO users VALUES (NULL,'eben',sha1('rey'));
 
+DROP TABLE IF EXISTS usersXnetworks;
+CREATE TABLE usersXnetworks (
+	usersXnetworksId int not null auto_increment primary key,
+	userId int not null,
+	networkId int not null
+);
+
+INSERT INTO usersXnetworks VALUES (NULL,1,1);
+INSERT INTO usersXnetworks VALUES (NULL,2,1);
+
+
+
 	

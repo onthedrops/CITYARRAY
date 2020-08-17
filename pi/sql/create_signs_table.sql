@@ -9,24 +9,36 @@ CREATE TABLE signs (
 INSERT INTO signs VALUES (NULL,1,1,'sign1');
 INSERT INTO signs VALUES (NULL,1,2,'sign2');
 
-DROP TABLE IF EXISTS signMessages;
-CREATE TABLE signMessages (
-	signId int not null,
+
+DROP TABLE IF EXISTS messages;
+CREATE TABLE messages (
+	messageId int not null auto_increment primary key,
 	message text,
+	createDate datetime
+);
+
+
+INSERT INTO messages VALUES (NULL,'Test Message',NOW());
+INSERT INTO messages VALUES (NULL,'~!GTest Message', NOW());
+
+DROP TABLE IF EXISTS signMessage;
+CREATE TABLE signMessage (
+	signId int not null,
+	messageId int not null,
 	setDate datetime,
 	firstShownDate datetime,
 	lastShownDate datetime
 );
 
-INSERT INTO signMessages VALUES (1,'Test Message',NOW(),NULL,NULL);
-INSERT INTO signMessages VALUES (2,'~!GTest Message', NOW(), NULL, NULL);
+INSERT INTO signMessage VALUES (1,1,NOW(),NULL,NULL);
+INSERT INTO signMessage VALUES (2,2,NOW(),NULL,NULL);
 
 
 DROP TABLE IF EXISTS signMessageArchive;
 CREATE TABLE signMessageArchive (
 	signArchiveId int not null auto_increment primary key,
 	signId int not null,
-	message text,
+	messageId int not null,
 	setDate datetime,
 	firstShownDate datetime,
 	lastShownDate datetime,
