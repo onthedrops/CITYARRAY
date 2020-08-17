@@ -3,5 +3,4 @@
 echo -n "Test: "
 
 curl http://localhost/msg.php?netId=1\&netpw=ebenrey\&signId=1 2>&1
-sleep 1;
 echo ""
