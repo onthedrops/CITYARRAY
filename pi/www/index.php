@@ -1,16 +1,29 @@
 <?php
 
 	require('header.inc.php');
+	
 
 	
-	
+//	print_r($_REQUEST);	
 	// display list of signs
+	if(isset($_REQUEST['Submit'])) {
+		$messageId = Message::saveMessage($_REQUEST['taMsg']);
+		// if a individual sign is selected, set that sign to this message
+		// if a group of signs is selected, set those signs to this message
+		if(isset($_REQUEST['selIndividual']) && $_REQUEST['selIndividual']) {
+			User::setSignMessage($_REQUEST['selIndividual'], $messageId);
+		}
+
+		if(isset($_REQUEST['selGroup']) && $_REQUEST['selGroup']) {
+			User::setSignGroupMessage($_REQUEST['selGroup'],$messageId);
+		}
+	}
 	
 ?>
-<FORM METHOD="POST">
+<FORM ACTION="/index.php" METHOD="POST">
 	<TABLE>
 	<TD>Individual sign</TD><TD>
-		<SELECT ID="selIndividual">
+		<SELECT NAME="selIndividual">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
 	
@@ -20,7 +33,7 @@
 		}
 
 ?>
-		</SELECT></TD><TD>Group of signs</TD><TD><SELECT ID="selGroup">
+		</SELECT></TD><TD>Group of signs</TD><TD><SELECT NAME="selGroup">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
 		$groupList = User::getInstance()->getSignGroups();
@@ -31,8 +44,8 @@
 ?>
 	</SELECT>
 	</TD></TR>
-	<TR><TD COLSPAN=4><TEXTAREA ID="taMsg" ROWS="10" COLS="60"> </TEXTAREA></TD></TR>
-	<TR><TD></TD><TD></TD><TD></TD><TD ALIGN="RIGHT"><INPUT TYPE="SUBMIT" /></TD></TR>
+	<TR><TD COLSPAN=4><TEXTAREA NAME="taMsg" ROWS="10" COLS="60"> </TEXTAREA></TD></TR>
+	<TR><TD></TD><TD></TD><TD></TD><TD ALIGN="RIGHT"><INPUT NAME="Submit" TYPE="SUBMIT" /></TD></TR>
 	</TABLE>
 	</FORM>
 

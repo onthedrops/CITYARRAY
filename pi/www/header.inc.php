@@ -1,12 +1,13 @@
 <?php
 
 require_once('User.inc.php');
+require_once('Message.inc.php');
 
 if (session_status() !== PHP_SESSION_ACTIVE) {session_start();}
 
 if($_SESSION['userId']) {
 	$user = User::getInstance();
-	$user->setUser($_SESSION['userId']);
+	$user->setUserId($_SESSION['userId']);
 } else {
 	$_SESSION['return'] = $_SERVER['REQUEST_URI'];
 	header('Location: ' . $BASE . '/login.php');

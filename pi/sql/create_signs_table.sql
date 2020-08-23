@@ -13,13 +13,14 @@ INSERT INTO signs VALUES (NULL,1,2,'sign2');
 DROP TABLE IF EXISTS messages;
 CREATE TABLE messages (
 	messageId int not null auto_increment primary key,
+	userId int not null,
 	message text,
 	createDate datetime
 );
 
 
-INSERT INTO messages VALUES (NULL,'Test Message',NOW());
-INSERT INTO messages VALUES (NULL,'~!GTest Message', NOW());
+INSERT INTO messages VALUES (NULL,1,'Test Message',NOW());
+INSERT INTO messages VALUES (NULL,1,'~!GTest Message', NOW());
 
 DROP TABLE IF EXISTS signMessage;
 CREATE TABLE signMessage (

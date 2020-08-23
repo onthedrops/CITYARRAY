@@ -71,12 +71,43 @@ class User {
 		return self::$instance->dbh;
 	}
 
-	public function setUser($userId) {
+	public function setUserId($userId) {
                 $this->userId = $userId;
 	}
 
-	 public function Logout() {
+	public function getUserId() {
+		return $this->userId;
+	}
+
+	public function Logout() {
                 unset( $_SESSION['userId'] );
         }
+
+	public static function setSignMessage($signId, $messageId) {
+		$user = self::getInstance();
+		$userId = $user->userId;
+
+		$dbh = $user->dbh;
+		$dbh->Query("INSERT INTO signMessageArchive SET signId = $signId, messageId=$messageId,setDate=NOW()");
+		$dbh->Query("UPDATE signMessage SET setDate=NOW(), messageId = $messageId WHERE signId = $signId");
+		// todo: validate input before acting on it!
+	}
+
+	public static function setSignGroupMessage($signGroupId, $messageId) {
+		$user = self::getInstance();
+		$userId = $user->userId;
+		$dbh = $user->dbh;
+
+		$signList = array();
+
+		$dbh->Query("SELECT signId FROM signsXgroups WHERE groupId = $signGroupId");
+		while($dbh->next_record()) {
+			array_push($signList, $dbh->f("signId"));
+		}
+
+		foreach($signList as $signId) {
+			self::setSignMessage($signId, $messageId);
+		}
+	}
 		
 }

@@ -34,5 +34,5 @@ CREATE TABLE signsXgroups (
 );
 
 INSERT INTO signsXgroups VALUES (NULL,1,1);
-INSERT INTO signsXgroups VALUES (NULL,1,2);
+INSERT INTO signsXgroups VALUES (NULL,2,1);
 
