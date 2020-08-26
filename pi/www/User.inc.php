@@ -14,6 +14,27 @@ class User {
         	$this->dbh = new SQLng();
 	}
 
+	public function getSignGroupMessages($groupId)
+	{
+		$ret = array();
+		if(!$this->userId)
+			return $ret;
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT sm.messageId, m.message, sm.signId FROM signMessage sm, messages m, signsXgroups sxg where sxg.groupId = " . $dbh->equote($groupId) . " AND sxg.signId = sm.signId AND m.messageId = sm.messageId");
+		while($dbh->next_record()) {
+			$rowArray = array(
+				'signId' => $dbh->f("signId"),
+				'messageId' => $dbh->f("messageId"),
+				'message' => $dbh->f("message")
+			);
+	
+			array_push($ret, $rowArray);
+		}
+		
+		return $ret;
+	}
+
 	public function getSignGroups()
 	{
 		// returns a array of id -> groupName for this user
@@ -32,6 +53,25 @@ class User {
 		}
 
 		return $ret;
+	}
+
+	public function owns($signId)
+	{
+		// todo : make sure user is allowed to access sign
+
+		return true;
+	}
+	
+
+	public function getMessage($signId) 
+	{
+		if(!$this->userId)
+			return false;
+
+		$dbh = $this->dbh;
+
+		$message = $dbh->selectOne("SELECT message FROM messages m, signMessage sm WHERE m.messageId = sm.messageId AND sm.signId = " . $dbh->equote($signId));
+		return $message;	
 	}
 
 	public function getMessages()

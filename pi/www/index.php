@@ -43,10 +43,47 @@
 	}
 	
 ?>
+<script>
+	var xmlReq = new XMLHttpRequest();
+
+	function groupChange(e) {
+		var value = document.getElementById('selGroup').value;
+
+	 	xmlReq.onreadystatechange = onStatusChange;
+                xmlReq.open('POST', '/signDO.php?groupId=' + value, true)
+		xmlReq.withCredentials=true;
+		xmlReq.send();
+	}
+
+	function individualChange(e) {
+		var value = document.getElementById('selIndividual').value;
+
+	 	xmlReq.onreadystatechange = onStatusChange;
+                xmlReq.open('POST', '/signDO.php?id=' + value, true)
+		xmlReq.withCredentials=true;
+		xmlReq.send();
+	}
+
+	function onStatusChange() {
+		   if(xmlReq.readyState == 4) {
+                        if(xmlReq.status == 200) {
+				var res = JSON.parse(xmlReq.responseText);
+				if(res.error) {
+					var d = document.getElementById('stdout');
+					d.innerHTML = res.error;
+				} else {
+					var d = document.getElementById('taMsg');
+					d.value = res.value;
+				}
+			}
+		  }
+	}
+</script>
 <FORM ACTION="/index.php" METHOD="POST">
+	<DIV ID=stdout></DIV>
 	<TABLE>
 	<TD>Individual sign</TD><TD>
-		<SELECT NAME="selIndividual">
+		<SELECT ID="selIndividual" NAME="selIndividual" onchange="individualChange()">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
 	
@@ -56,7 +93,7 @@
 		}
 
 ?>
-		</SELECT></TD><TD>Group of signs</TD><TD><SELECT NAME="selGroup">
+		</SELECT></TD><TD>Group of signs</TD><TD><SELECT ID="selGroup" NAME="selGroup" onchange="groupChange()">
 			<OPTION VALUE="0" SELECTED>None</OPTION>
 <?php
 		$groupList = User::getInstance()->getSignGroups();
@@ -67,7 +104,7 @@
 ?>
 	</SELECT>
 	</TD></TR>
-	<TR><TD COLSPAN=4><TEXTAREA NAME="taMsg" ROWS="10" COLS="60"> </TEXTAREA></TD></TR>
+	<TR><TD COLSPAN=4><TEXTAREA ID="taMsg" NAME="taMsg" ROWS="10" COLS="60"> </TEXTAREA></TD></TR>
 	<TR><TD></TD><TD></TD><TD></TD><TD ALIGN="RIGHT"><INPUT NAME="Submit" TYPE="SUBMIT" /></TD></TR>
 	</TABLE>
 	</FORM>
