@@ -104,7 +104,7 @@
 ?>
 	</SELECT>
 	</TD></TR>
-	<TR><TD COLSPAN=4><TEXTAREA ID="taMsg" NAME="taMsg" ROWS="10" COLS="60"> </TEXTAREA></TD></TR>
+	<TR><TD COLSPAN=4><TEXTAREA ID="taMsg" NAME="taMsg" ROWS="10" COLS="60"></TEXTAREA></TD></TR>
 	<TR><TD></TD><TD></TD><TD></TD><TD ALIGN="RIGHT"><INPUT NAME="Submit" TYPE="SUBMIT" /></TD></TR>
 	</TABLE>
 	</FORM>
