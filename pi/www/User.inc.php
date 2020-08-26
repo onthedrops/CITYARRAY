@@ -34,6 +34,92 @@ class User {
 		return $ret;
 	}
 
+	public function getMessages()
+	{
+		$ret = array();
+
+		if(!$this->userId)
+			return $ret;
+
+		
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT messageId, message FROM messages WHERE userId = " . $this->userId);
+		while($dbh->next_record()) {
+			$key = $dbh->f("messageId");
+			$ret[$key] = $dbh->f('message');
+		}
+	
+		return $ret;
+	}
+
+	public function addPreset($presetName)
+	{
+		if(!$this->userId)
+			return false;
+
+		
+		$dbh = $this->dbh;
+		$dbh->Query("INSERT INTO signPresets SET presetName = " . $dbh->equote($presetName) . ", userId = " .  $this->userId);
+
+	}
+	
+	public function setPresetValue($presetId, $signId, $signValue)
+	{
+		$dbh = $this->dbh;
+		
+
+		$dbh->Query("SELECT presetDataId FROM signPresetData WHERE presetId = " . $dbh->equote($presetId) . " AND signId = " . $dbh->equote($signId));
+		$dbh->next_record();
+
+		$presetDataId = $dbh->f("presetDataId");
+		if($presetDataId) {
+			$dbh->Query("UPDATE signPresetData SET messageId = " . $dbh->equote($signValue) . " WHERE presetDataId = $presetDataId");
+		} else {
+			$dbh->Query("INSERT INTO signPresetData SET presetId = " . $dbh->equote($presetId) . ", signId = " . $dbh->equote($signId) . ", messageId = " . $dbh->equote($signValue));
+		}
+	}
+
+	public function getPreset($presetId) 
+	{
+		// todo : ensure user owns preset!
+
+		$ret = array();
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.signId, ss.signName, s.messageId, m.message FROM signPresetData s, signs ss, messages m WHERE ss.signId = s.signId AND m.messageId = s.messageId AND s.presetId = " . $dbh->equote($presetId));
+	
+		while($dbh->next_record()) {
+			$rowArray = array('signId' => $dbh->f('signId'),
+					'messageId' => $dbh->f('messageId'),
+					'signName' => $dbh->f('signName'),
+					'message' => $dbh->f('message'));
+
+			$ret[$dbh->f('signId')] = $rowArray;
+		}
+		
+		return $ret;
+	}
+
+	public function getPresets()
+	{
+		$ret = array();
+
+		if(!$this->userId)
+			return $ret;
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.presetId, s.presetName FROM signPresets s WHERE s.userId = " . $this->userId);
+		while($dbh->next_record()) {
+			$key = $dbh->f("presetId");
+			$name = $dbh->f("presetName");
+
+			$ret[$key] = $name;
+		}
+
+		return $ret;
+	}
+		
 	public function getSigns()
 	{
 		// returns a array of id -> signName for this user
