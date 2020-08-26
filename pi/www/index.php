@@ -14,7 +14,8 @@
 		$presetId = $_REQUEST['presetId'];
 		$signMessageArray = User::getInstance()->getPreset($presetId);
 		foreach ($signMessageArray as $signId => $signData) {
-			User::setSignMessage($signId, $signData['messageId']);
+			if($signData['messageId'] != 0)
+				User::setSignMessage($signId, $signData['messageId']);
 		}
 	}
 
