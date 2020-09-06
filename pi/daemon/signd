@@ -1,0 +1,10 @@
+#!/usr/bin/perl
+
+use FindBin;
+
+push(@INC, $FindBin::Bin . "/../lib");
+
+require S2Config;
+
+
+S2Config::setup();
