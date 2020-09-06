@@ -1,6 +1,7 @@
 #!/bin/bash
 
 apt-get update
+apt-get -y install libexpat-dev
 apt-get -y install libdbd-mysql-perl wiringpi cpanminus festival
 
 cpanm RPi::Pin
