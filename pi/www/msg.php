@@ -42,9 +42,11 @@
 	}
 
 	// step 2 - find sign via netId and signRemoteId
-	$dbh->Query("SELECT signId FROM signs WHERE networkId = $netId AND signRemoteId = $signIdq");
+	$dbh->Query("SELECT signId, signIp FROM signs WHERE networkId = $netId AND signRemoteId = $signIdq");
 	$dbh->next_record();
 	$signId = $dbh->f("signId");
+	$signIp = $dbh->f("sighIp");
+
 	if(!$signId) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 bad signId', true, 500);
 		echo "Bad signId";
@@ -52,6 +54,11 @@
 	}
 	
 	
+	if(!$signIp) {
+		$signIpq = $dbh->equote($_SERVER['REMOTE_ADDR']);
+		$dbh->Query("UPDATE signs set signIp = $signIpq WHERE signId = $signId");
+	}
+
 	// step 3 - find messageId for sign
 
 	$dbh->Query("SELECT messageId, firstShownDate FROM signMessage WHERE signId = $signId");

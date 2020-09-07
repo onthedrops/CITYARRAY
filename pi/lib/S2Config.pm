@@ -7,9 +7,6 @@ push(@INC,$FindBin::Bin . "/../lib");
 
 #use forks;
 
-require S2Unix;
-require S2Log;
-
 use Data::Dumper;
 use XML::Simple;
 use LWP::UserAgent;
@@ -51,7 +48,7 @@ sub getHomedir
 
 sub readDefaultConfigFile
 {
-	readConfigFile('/etc/gt/default.xml');
+	readConfigFile('/etc/neio/default.xml');
 }
 
 sub readConfigIntoPerlHash
@@ -104,7 +101,9 @@ sub readConfigFile
 	}
 
 	if(! -f $file) {
-		S2Log::Log(-1,"Warning: can't read $file","S2Config");
+		#S2Log::Log(-1,"Warning: can't read $file","S2Config");
+		print "Warning: Can't read $file\n" if($main::debug);
+
 		return undef;
 	}
 
@@ -112,7 +111,9 @@ sub readConfigFile
 	my $r = eval { return $xs->XMLin($file); };
 
 	if(!$r || $@) {
-		S2Log::Log(-1,"No return code or error reading $file: $@","S2Config");
+		#S2Log::Log(-1,"No return code or error reading $file: $@","S2Config");
+		print "Warning: No return code or error reading $file: $@\n" if($main::debug);
+		return undef;	
 	}
 
 	print "Successfully parsed $file\n" if($main::debug & 65536);
@@ -194,7 +195,7 @@ sub getConfigValueMulti
 
 	my $returnValue = eval($evalString);
 
-	S2Unix::crash("this case not handled yet") if($returnValue =~ /^HASH.*/);
+	die("this case not handled yet") if($returnValue =~ /^HASH.*/);
 	return $returnValue;
 }
 
@@ -360,13 +361,13 @@ sub interpretDModes {
 	my $returnMsg = '';
 	
 	$returnMsg .= 'Generic ' if($main::debug & 1);
-	$returnMsg .= 'Kitten ' if($main::debug & 2);
-	$returnMsg .= 'Racetrack ' if($main::debug & 4);
-	$returnMsg .= 'History ' if($main::debug & 8);
-	$returnMsg .= 'Messaging ' if($main::debug & 16);
-	$returnMsg .= 'Playhead ' if($main::debug & 32);
-	$returnMsg .= 'Genetics ' if($main::debug & 64);
-	$returnMsg .= 'Neurophyiscs ' if($main::debug & 128);
+	$returnMsg .= '' if($main::debug & 2);
+	$returnMsg .= '' if($main::debug & 4);
+	$returnMsg .= '' if($main::debug & 8);
+	$returnMsg .= '' if($main::debug & 16);
+	$returnMsg .= '' if($main::debug & 32);
+	$returnMsg .= '' if($main::debug & 64);
+	$returnMsg .= '' if($main::debug & 128);
 	$returnMsg .= 'Paranoid ' if($main::debug & 512); # that would be me..
 	$returnMsg .= 'Debugging ' if($main::debug & 32768); # Quis custodiet ipsos custodes?
 	$returnMsg .= 'Config ' if($main::debug & 65536);
@@ -378,12 +379,12 @@ sub interpretXModes {
 	my $self = shift;
 
 	my $returnMsg = '';
-	$returnMsg .= 'BuyingEnabled ' if($self::xmode & 1);
-	$returnMsg .= 'SellingEnabled ' if($self::xmode & 2);
-	$returnMsg .= 'TestModeDisabled ' if($self::xmode & 4);
-	$returnMsg .= 'TestFailEnabled ' if($self::xmode & 8);
-	$returnMsg .= "Simulation " if(!($self::xmode & 16));
-	$returnMsg .= 'ExtraDebugging ' if($self::xmode & 256);
+	$returnMsg .= '' if($self::xmode & 1);
+	$returnMsg .= '' if($self::xmode & 2);
+	$returnMsg .= '' if($self::xmode & 4);
+	$returnMsg .= '' if($self::xmode & 8);
+	$returnMsg .= "" if(!($self::xmode & 16));
+	$returnMsg .= '' if($self::xmode & 256);
 
 	return $returnMsg;
 
@@ -412,9 +413,9 @@ sub setupDefault # dyslexic, am I?
 sub defaultSetup
 {
 	my $pFile = shift;
-	my $appName = S2Unix::getAppName();
+	my $appName = S2Config::getAppName();
 	my $appConfigFile = $appName . ".xml";
-	my @possibleAppFiles = ( S2Config::getHomedir() . '/conf/' . $appConfigFile, '/etc/gt/' . $appConfigFile );
+	my @possibleAppFiles = ( S2Config::getHomedir() . '/conf/' . $appConfigFile, '/etc/neio/' . $appConfigFile );
 
 	my ($file);
 	foreach $file (@possibleAppFiles) {
@@ -425,7 +426,7 @@ sub defaultSetup
 		}
 	}
 
-	my @possibleDefaults = ( $pFile, S2Config::getHomedir() . '/conf/default.xml', "/etc/gt2/gt.xml", "/etc/gt2.xml" );
+	my @possibleDefaults = ( $pFile, S2Config::getHomedir() . '/conf/default.xml', "/etc/neio/sign.xml");
 
 
 	foreach $file (@possibleDefaults) {
@@ -518,9 +519,28 @@ sub getConfigValue
 	return $val;
 }
 
+# functions previously offered by S2Unix, in a attempt to flatten this as a generic lib
+
+sub getAppName
+{
+	my $self = new S2Config;
+	my $appPath = $main::0;
+        my ($procname) = $0 =~ /.*\/(.*)/;
+
+        return $self->{'appName'} if($self->{'appName'});
+        return $procname;
+}
+
+
 sub getHostname
 {
-	return S2Unix::getHostname();
+	my $self = new S2Config;
+	return $self->{'hostname'} if($self->{'hostname'});
+	my $hostname = `hostname`;
+	chop($hostname);
+	$self->{'hostname'} = $self->{'hostname'};
+	return $hostname;
+	
 }
 
 

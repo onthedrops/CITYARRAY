@@ -3,11 +3,12 @@ CREATE TABLE signs (
 	signId int not null auto_increment primary key,
 	networkId int not null,
 	signRemoteId int not null,
-	signName varchar(64)
+	signName varchar(64),
+	signIp varchar(32)
 );
 
-INSERT INTO signs VALUES (NULL,1,1,'sign1');
-INSERT INTO signs VALUES (NULL,1,2,'sign2');
+INSERT INTO signs VALUES (NULL,1,1,'sign1',NULL);
+INSERT INTO signs VALUES (NULL,1,2,'sign2',NULL);
 
 
 DROP TABLE IF EXISTS messages;
