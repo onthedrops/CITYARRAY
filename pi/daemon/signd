@@ -1,10 +1,105 @@
 #!/usr/bin/perl
 
 use FindBin;
+use IO::Socket::INET;
+
 
 push(@INC, $FindBin::Bin . "/../lib");
 
 require S2Config;
+require S2dbobj;
+
+S2Config::setup('../conf/signd.xml');
+
+$home = S2Config::getHomedir();
+$pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signd.pid';
+if(-f $pidFile) {
+	open(PID, "<$pidFile");
+	$pid = <PID>;
+	close(PID);
+	chop($pid);
+	if(-d "/proc/$pid") {
+		die "Already running ($pid)";
+	}
+}
 
 
-S2Config::setup();
+if(!S2Config::getConfigValue('nofork')) {
+	if($pid = fork()) {
+		exit(0);
+	} else {
+		close(STDIN);
+		close(STDOUT);
+		close(STDERR);
+	}	
+}
+
+open(PID,">$pidFile");
+print PID "$$\n";
+close(PID);
+
+$dbh = S2dbobj::getHandle();
+
+$SIG{'TERM'} = sigterm;
+
+$main::alive = 1;
+
+$signIpCache = {};
+
+while($main::alive) {
+	$sth = $dbh->prepare("SELECT signNotifyId, signId FROM signNotifies WHERE notified = 0");
+	$sth->execute();
+	while($x = $sth->fetchrow_hashref()) {
+		push(@workArray, $x);
+	}
+
+	while($notify = shift(@workArray)) {
+		$signId = $notify->{'signId'};
+		$signNotifyId = $notify->{'signNotifyId'};
+
+		if(defined $signIpCache->{$signId} && $signIpCache->{$signId}) {
+			$sendIp = $signIpCache->{$signId};
+		} else {
+			($signIp) = $dbh->selectrow_array("SELECT signIp FROM signs WHERE signId = $signId");
+			if($signIp) {
+				$signIpCache->{$signId} = $signIp;
+				$sendIp = $signIp;
+			} else {
+				$sendIp = undef;
+			}
+		}
+
+		if($sendIp) {
+			$sock = new IO::Socket::INET(PeerAddr => $sendIp,
+                		PeerPort => 1234,
+                		Proto => 'udp', Timeout => 1);
+
+			if($sock) {
+				print $sock "\n";
+				select(undef,undef,undef,0.1);
+				print $sock "\n";
+				select(undef,undef,undef,0.1);
+				print $sock "\n";
+				close($sock);
+				$notified = 1;
+			} else {
+				$notified = -2;
+			}
+		} else {
+			$notified = -1;
+		}
+		
+		print "SI: $signId SNI: $signNotifyId sendIp $sendIp notified: $notified \n" if($debug);
+		$dbh->do("UPDATE signNotifies SET notified = $notified, notifyTime=NOW() WHERE signNotifyId = $signNotifyId");	
+	}
+
+	select(undef,undef,undef,0.25);
+}
+
+unlink($pidFile);
+
+
+sub sigterm {
+	my $sig = shift;
+	$main::alive = 0;
+}
