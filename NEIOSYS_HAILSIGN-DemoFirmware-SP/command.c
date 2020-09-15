@@ -6,9 +6,11 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_https_ota.h"
-#include "ssl_cert.h"
 
 extern int networkState;
+extern uint8_t gBrightness;
+extern uint8_t rBrightness;
+
 
 void processCommand(char *string)
 {        
@@ -25,12 +27,36 @@ void processCommand(char *string)
             case 'U': command_upgrade(string); return;
             case 'V': command_version(); return;  
             case '?': command_info(); return;
+            case '+': command_brightness_up(); return;
+            case '-': command_brightness_down(); return;
           }
        }
        
         sendBT("read string [");
         sendBT(string);
         sendlineBT("]");
+}
+
+void command_brightness_up() {
+  if(gBrightness < 0x0F)
+    gBrightness++;
+    rBrightness = gBrightness;
+
+  char buf[64];
+  sprintf(buf, "+OK brightness %d", rBrightness);
+  sendlineBT(buf);
+ }
+
+void command_brightness_down() {
+  if(gBrightness > 0)
+    gBrightness--;
+    rBrightness = gBrightness;
+
+  char buf[64];
+  sprintf(buf, "+OK brightness %d", rBrightness);
+  sendlineBT(buf);
+  
+      
 }
 
 void comamnd_set_key(char *string) {
@@ -147,9 +173,15 @@ void command_info() {
 
 esp_err_t do_firmware_upgrade()
 {
+   
+   char *sig = get_firmware_sig();
+   
+   if(!sig)
+    return ESP_ERR_TIMEOUT;
+                         
     esp_http_client_config_t config = {
         .url = signConfig.upgradeURL,
-        .cert_pem = ssl_cert,
+        .cert_pem = sig,
     };
 
 

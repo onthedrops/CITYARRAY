@@ -27,7 +27,7 @@ extern "C" {
 // Section: Type Definitions
 // *****************************************************************************
 // *****************************************************************************
-#define FIRST_BCM_BIT_TICK_COUNT 15 //15us for the 1st brightness bit
+#define FIRST_BCM_BIT_TICK_COUNT 10 //15us for the 1st brightness bit
 
 #define BCM_Is_Ready() BCM_Bit_Complete_Flag_Get()
 

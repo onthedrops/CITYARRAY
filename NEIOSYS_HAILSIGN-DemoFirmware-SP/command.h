@@ -27,6 +27,7 @@ extern void sendlineBT(char *string);
 extern void openBT();
 extern void closeBT();
 extern void reboot();
+extern char *get_firmware_sig();
 esp_err_t do_firmware_upgrade();
 
 extern volatile char workstring[256];

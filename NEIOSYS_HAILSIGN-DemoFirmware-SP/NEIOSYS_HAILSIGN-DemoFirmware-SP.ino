@@ -8,6 +8,9 @@
 #include "config.h"
 
 #include <WiFi.h>
+#include <WiFiUdp.h>
+#include "AsyncUDP.h"
+
 #include <HTTPClient.h>
 #include <string.h>
 
@@ -61,13 +64,15 @@ DISPLAY_SBITMAP_2BIT *testBitmap3;
 DISPLAY_BITMAP_1BIT emptyBitmap1BitRed = { emptyBitmapRed, 16, 64 };
 DISPLAY_BITMAP_1BIT emptyBitmap1BitGreen = { emptyBitmapGreen, 16, 64 };
 
-uint8_t gBrightness = 0xFF;
-uint8_t rBrightness = 0xFF;
+uint8_t gBrightness = 0x0F;
+uint8_t rBrightness = 0x0F;
 
 unsigned long lastTime = 0;
-unsigned long timerDelay = 5000;
+unsigned long timerDelay = 120000;
 
 BluetoothSerial SerialBT;
+AsyncUDP udp;
+
 #define T __
 
 
@@ -86,6 +91,7 @@ void setup()
   setupNVS();
   loadConfig();
   openBT();
+  
   
   Serial.println("Connecting");
 
@@ -141,6 +147,7 @@ char readchar;
 
 int inputPtr = 0;
 volatile int networkState = 0;
+int execNow = 0;
 
 
 void networkTask(void * pvParameters) {
@@ -169,6 +176,10 @@ void networkTask(void * pvParameters) {
          case 1:    
                     if(WiFi.status() == WL_CONNECTED) {
                         networkState = 2; 
+                        udp.listen(1234);
+                        udp.onPacket([](AsyncUDPPacket packet) {
+                          execNow = 1;
+                        });
                         Serial.println("Connected");  
                     }
                     
@@ -178,35 +189,38 @@ void networkTask(void * pvParameters) {
                     }
                     
                     break;     
-         case 2:    if ((millis() - lastTime) > timerDelay) {
+         case 2:  
+                      
+                      if (execNow == 1 || ((millis() - lastTime) > timerDelay)) {
                         if(WiFi.status() != WL_CONNECTED) {
-                        networkState = 0;
-                    } else {
-                       if(signConfig.fetchHost) {
-                         char workbuf[256];
+                          networkState = 0;
+                        } else {
+                          if(signConfig.fetchHost) {
+                          char workbuf[256];
                         
-                         HTTPClient http;
+                          HTTPClient http;
 
-                         sprintf(workbuf, "%s?signId=%s",signConfig.fetchHost, signConfig.signID);
-                         http.begin(workbuf);
+                          sprintf(workbuf, "%s?signId=%s",signConfig.fetchHost, signConfig.signID);
+                          http.begin(workbuf);
 
-                         Serial.print("Fetching from ");
-                         Serial.println(workbuf);
+                          Serial.print("Fetching from ");
+                          Serial.println(workbuf);
                         
-                         int httpResponseCode = http.GET();
+                          int httpResponseCode = http.GET();
       
-                         if (httpResponseCode>0) {
+                          if (httpResponseCode>0) {
                             String payload = http.getString();
 
                             payload.toCharArray((char *)workstring,payload.length()+1);
                             workstring[payload.length()+1] = 0;
-                         } 
-                         
+                          } 
+                      
                          http.end();
                        }
                       
                      }
                      lastTime = millis();
+                     execNow = 0;
                   }
                   break;
             case 3:
@@ -214,7 +228,7 @@ void networkTask(void * pvParameters) {
                     disableCore0WDT();
                     SerialBT.end();
                     do_firmware_upgrade();
-                    SerialBT.begin(signConfig.signID);   
+                    SerialBT.begin(signConfig.bluetoothID);   
                     networkState = 2;
 #endif
                   break;
@@ -317,16 +331,9 @@ void loop()
 
     scrollInt += scrollVal;
     
-    displayMethodDelay++;
-    if(displayMethodDelay == 250)
-    {
-      DISPLAY_Method_Set(BITMAP_1BIT);
-          displayMethodDelay = 0;
-       //   DISPLAY_Bitmap_Put_1Bit(neiosysBitmap1Bit, neiosysBitmap1Bit);         
-//         DISPLAY_Bitmap_Put_1Bit(*sheerBitmap1Bit, *sheerBitmap1Bit);
-           DISPLAY_Bitmap_Put_1Bit(emptyBitmap1BitRed, emptyBitmap1BitGreen);
+          // DISPLAY_Bitmap_Put_1Bit(emptyBitmap1BitRed, emptyBitmap1BitGreen);
+           DISPLAY_Brightness_Set(rBrightness, gBrightness);
 
-    }
   }
 //---------------------------------------------
 //For testing purpose only
@@ -361,8 +368,32 @@ void closeBT()
 
 void openBT()
 {
- SerialBT.begin(signConfig.signID);   
+ SerialBT.begin(signConfig.bluetoothID);   
 }
+
+char *get_firmware_sig()
+{
+    HTTPClient http;
+
+    http.begin(signConfig.sigURL);
+    char *sig;
+  
+    int httpResponseCode = http.GET();
+      
+    if (httpResponseCode>0) {
+      String payload = http.getString();
+      sig = (char *) malloc(payload.length()+1);
+      payload.toCharArray(sig,payload.length()+1);
+      sig[payload.length()+1] = 0;
+    } else {
+      return 0;                   
+    }
+  
+    http.end();
+    return sig;
+}
+
+
 
 /*******************************************************************************
  End of File

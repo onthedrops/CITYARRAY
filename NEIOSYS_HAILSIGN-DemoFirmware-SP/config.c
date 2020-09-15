@@ -52,7 +52,7 @@ void loadConfig()
   signConfig.signID = getConfigKey("signID");
   signConfig.fetchHost = getConfigKey("fetchHost"); 
   signConfig.upgradeURL = getConfigKey("upgradeURL");
-  signConfig.upgradeCert = getConfigKey("upgradeCert");
+  signConfig.sigURL = getConfigKey("sigUrl");
 
 }
 char *getConfigKey(char *key)

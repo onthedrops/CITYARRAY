@@ -111,7 +111,7 @@ void DISPLAY_Bitmap_1Bit(DISPLAY_BITMAP_1BIT rBitmap, uint8_t rBrightness, DISPL
     rDataPtr += rFlag;
     gDataPtr += gFlag;
   }
-  row_off();
+//  row_off();
   row_data_latch();
   turn_on_row(row);
 }

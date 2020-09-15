@@ -30,7 +30,7 @@ typedef struct
   char *fetchHost;
   char *signID;
   char *upgradeURL;
-  char *upgradeCert;
+  char *sigURL;
   
 } CONFIG;
 
