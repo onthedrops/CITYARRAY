@@ -93,8 +93,7 @@ void setup()
   openBT();
   
   
-  Serial.println("Connecting");
-
+  
 
           
   testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
@@ -166,7 +165,9 @@ void networkTask(void * pvParameters) {
                           networkState = 2;             
                         } else {
                           WiFi.begin(signConfig.ssid, signConfig.password);
-                          Serial.println("Connecting");
+                          Serial.print("Connecting from ");
+                          Serial.println(WiFi.macAddress());
+
                           networkState = 1;
                         } 
                     
@@ -175,6 +176,7 @@ void networkTask(void * pvParameters) {
                     break;
          case 1:    
                     if(WiFi.status() == WL_CONNECTED) {
+                        execNow = 1; // we need to connect once so remote end knows our IP address
                         networkState = 2; 
                         udp.listen(1234);
                         udp.onPacket([](AsyncUDPPacket packet) {
@@ -200,11 +202,10 @@ void networkTask(void * pvParameters) {
                         
                           HTTPClient http;
 
-                          sprintf(workbuf, "%s?signId=%s",signConfig.fetchHost, signConfig.signID);
-                          http.begin(workbuf);
+                          http.begin(signConfig.fetchHost);
 
                           Serial.print("Fetching from ");
-                          Serial.println(workbuf);
+                          Serial.println(signConfig.fetchHost);
                         
                           int httpResponseCode = http.GET();
       
@@ -289,6 +290,10 @@ void loop()
            
            if(strstr(outputstring,"\n")) {
 
+                if(strstr(outputstring,"~!UPGRADE")) {
+                  do_firmware_upgrade();
+                }
+                
                 if(strstr(outputstring,"~!<")) {
                   scrollVal = -1;  
                 } else if(strstr(outputstring,"~!>")) {
@@ -392,7 +397,6 @@ char *get_firmware_sig()
     http.end();
     return sig;
 }
-
 
 
 /*******************************************************************************

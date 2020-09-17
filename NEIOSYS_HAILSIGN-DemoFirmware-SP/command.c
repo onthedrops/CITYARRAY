@@ -168,6 +168,9 @@ void command_info() {
   sendlineBT(workbuf);
   sprintf(workbuf,"heap size: %d", esp_get_free_heap_size());
   sendlineBT(workbuf);
+  sprintf(workbuf, "Network state: %d", networkState);
+  sendlineBT(workbuf);
+  
   sendlineBT("EOF");
 }
 
