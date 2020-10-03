@@ -9,6 +9,7 @@ CREATE TABLE signs (
 
 INSERT INTO signs VALUES (NULL,1,1,'sign1',NULL);
 INSERT INTO signs VALUES (NULL,1,2,'sign2',NULL);
+INSERT INTO signs VALUES (NULL,1,3,'sign3',NULL);
 
 
 DROP TABLE IF EXISTS messages;
@@ -34,6 +35,7 @@ CREATE TABLE signMessage (
 
 INSERT INTO signMessage VALUES (1,1,NOW(),NULL,NULL);
 INSERT INTO signMessage VALUES (2,2,NOW(),NULL,NULL);
+INSERT INTO signMessage VALUES (3,2,NOW(),NULL,NULL);
 
 
 DROP TABLE IF EXISTS signMessageArchive;

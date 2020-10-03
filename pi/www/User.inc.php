@@ -141,6 +141,19 @@ class User {
 		return $ret;
 	}
 
+	public function getPresetId($presetName)
+	{
+		if(!$this->userId)
+			return 0;
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.presetId AS id FROM signPresets s WHERE s.userId = " . $this->userId . " AND s.presetName = " . $dbh->equote($presetName));
+		if($dbh->next_record()) {
+			return $dbh->f("id");
+		}
+	}
+
+
 	public function getPresets()
 	{
 		$ret = array();

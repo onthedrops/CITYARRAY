@@ -2,6 +2,11 @@
 
 use FindBin;
 use IO::Socket::INET;
+use Data::Dumper;
+use RPi::Pin;
+use RPi::Const qw(:all);
+use LWP::UserAgent;
+
 
 
 push(@INC, $FindBin::Bin . "/../lib");
@@ -19,19 +24,30 @@ if(-f $pidFile) {
 	close(PID);
 	chop($pid);
 	if(-d "/proc/$pid") {
-		die "Already running ($pid)";
+		$target = readlink "/proc/$pid";
+		if($target =~ /.*signd/) {
+			die "Already running ($pid / $target)";
+		} else {
+			unlink($pidFile);
+		}
 	}
 }
 
+if($main::debug) {
+	print S2Config::dumpConfig();
+}
 
 if(!S2Config::getConfigValue('nofork')) {
 	if($pid = fork()) {
+		print "Child $pid is forking\n" if($main::debug);
 		exit(0);
 	} else {
 		close(STDIN);
 		close(STDOUT);
 		close(STDERR);
 	}	
+} else {
+	print "Not forking\n" if($main::debug);
 }
 
 open(PID,">$pidFile");
@@ -41,14 +57,62 @@ close(PID);
 $dbh = S2dbobj::getHandle();
 
 $SIG{'TERM'} = sigterm;
+$SIG{'INT'} = sigterm;
+
+$main::dry_pin = RPi::Pin->new(24);
+$main::dry_pin->mode(INPUT);
+$main::dry_pin_>write(LOW);
+
+$main::dry_state = 0;
 
 $main::alive = 1;
+$lwp = new LWP::UserAgent;
 
 $signIpCache = {};
 
+$tickCounter = 0;
+
 while($main::alive) {
+	my $state = $main::dry_pin->read;
+	if($state && !$main::dry_state) {
+		print "High detected\n" if($debug);
+		$main::dry_state = 1;
+		# use LWP to switch to dry contact preset
+		$lwp->get("http://localhost/drycontact.php?contact=1");
+	} elsif(!$state && $main::dry_state) {
+		print "Low detected\n" if($debug);
+		$main::dry_state = 0;
+		# use LWP to switch to previous message
+		$lwp->get("http://localhost/drycontact.php?contact=0");
+	}
+
+
+	if(!($tickCounter % 10)) {
+		$cmd = S2Config::getConfigValue('gitcmd');
+
+		$sth = $dbh->prepare("SELECT updateId FROM updates WHERE updateVersion IS NULL");
+		$sth->execute();
+		while(($updateId) = $sth->fetchrow_array()) {
+			$buf = undef;
+			open(GIT,"$cmd|");
+			print "Running $cmd\n" if($main::debug);
+			while($in = <GIT>) {
+				print "in: $in\n" if($main::debug);
+				$buf .= $in;
+			}
+			close(GIT);
+			$version = `(cd /home/solar-firmware ; git rev-parse HEAD)`;
+			print "Version: $version\n" if($main::debug);
+			chop($version);
+
+
+			$dbh->do("UPDATE updates SET updatetext=" . $dbh->quote($buf) . ", updateVersion=" . $dbh->quote($version) . " WHERE updateId=$updateId");
+		}
+	}
+
 	$sth = $dbh->prepare("SELECT signNotifyId, signId FROM signNotifies WHERE notified = 0");
 	$sth->execute();
+
 	while($x = $sth->fetchrow_hashref()) {
 		push(@workArray, $x);
 	}
@@ -95,6 +159,8 @@ while($main::alive) {
 
 	select(undef,undef,undef,0.25);
 }
+
+print "Exiting\n" if($main::debug);
 
 unlink($pidFile);
 

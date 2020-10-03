@@ -16,6 +16,7 @@ CREATE TABLE signsXnetworks (
 
 INSERT INTO signsXnetworks VALUES (NULL,1,1);
 INSERT INTO signsXnetworks VALUES (NULL,2,1);
+INSERT INTO signsXnetworks VALUES (NULL,3,1);
 
 
 DROP TABLE IF EXISTS signGroups;
@@ -24,7 +25,8 @@ CREATE TABLE signGroups (
 	groupName varchar(64)
 );
 
-INSERT INTO signGroups VALUES(NULL,'Group');
+INSERT INTO signGroups VALUES(NULL,'Group All');
+INSERT INTO signGroups VALUES(NULL,'Group 2+3');
 
 DROP TABLE IF EXISTS signsXgroups;
 CREATE TABLE signsXgroups (
@@ -35,4 +37,8 @@ CREATE TABLE signsXgroups (
 
 INSERT INTO signsXgroups VALUES (NULL,1,1);
 INSERT INTO signsXgroups VALUES (NULL,2,1);
+INSERT INTO signsXgroups VALUES (NULL,3,1);
+
+INSERT INTO signsXgroups VALUES (NULL,2,2);
+INSERT INTO signsXgroups VALUES (NULL,3,2);
 
