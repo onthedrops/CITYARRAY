@@ -91,7 +91,7 @@ while($main::alive) {
 	}
 
 
-	if(!($tickCounter % 10)) {
+	if(!($tickCounter++ % 10)) {
 		$cmd = S2Config::getConfigValue('gitcmd');
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
