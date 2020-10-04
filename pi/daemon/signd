@@ -17,7 +17,10 @@ require S2dbobj;
 S2Config::setup('../conf/signd.xml');
 
 $home = S2Config::getHomedir();
+$logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
+
 $pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signd.pid';
+
 if(-f $pidFile) {
 	open(PID, "<$pidFile");
 	$pid = <PID>;
@@ -39,7 +42,7 @@ if($main::debug) {
 
 if(!S2Config::getConfigValue('nofork')) {
 	if($pid = fork()) {
-		print "Child $pid is forking\n" if($main::debug);
+		slog("Child $pid is forking");
 		exit(0);
 	} else {
 		close(STDIN);
@@ -47,7 +50,7 @@ if(!S2Config::getConfigValue('nofork')) {
 		close(STDERR);
 	}	
 } else {
-	print "Not forking\n" if($main::debug);
+	slog("Not forking");
 }
 
 open(PID,">$pidFile");
@@ -77,17 +80,17 @@ $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 while($main::alive) {
 	my $state = $main::dry_pin->read;
 	if($state && !$main::dry_state) {
-		print "High detected\n" if($debug);
+		slog("High detected");
 		$main::dry_state = 1;
 		# use LWP to switch to dry contact preset
 		$response = $lwp->get("http://localhost/drycontact.php?contact=1");
-		print "R: " . $response->{'_content'} . "\n" if($debug);
+		slog("R: " . $response->{'_content'});
 	} elsif(!$state && $main::dry_state) {
-		print "Low detected\n" if($debug);
+		slog("Low detected");
 		$main::dry_state = 0;
 		# use LWP to switch to previous message
 		$response = $lwp->get("http://localhost/drycontact.php?contact=0");
-		print "R: " . $response->{'_content'} . "\n" if($debug);
+		slog("R: " . $response->{'_content'});
 	}
 
 
@@ -96,7 +99,7 @@ while($main::alive) {
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
 		if($shutdown) {
-			print "Commanding shutdown\n" if($debug);
+			slog("Commanding shutdown");
 			$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
 			system("/sbin/shutdown -h now");
 		}
@@ -106,14 +109,14 @@ while($main::alive) {
 		while(($updateId) = $sth->fetchrow_array()) {
 			$buf = undef;
 			open(GIT,"$cmd|");
-			print "Running $cmd\n" if($main::debug);
+			slog("Running $cmd");
 			while($in = <GIT>) {
-				print "in: $in\n" if($main::debug);
+				slog("in: $in");
 				$buf .= $in;
 			}
 			close(GIT);
 			$version = `(cd /home/solar-firmware ; git rev-parse HEAD)`;
-			print "Version: $version\n" if($main::debug);
+			slog("Version: $version");
 			chop($version);
 
 
@@ -164,14 +167,14 @@ while($main::alive) {
 			$notified = -1;
 		}
 		
-		print "SI: $signId SNI: $signNotifyId sendIp $sendIp notified: $notified \n" if($debug);
+		slog("SI: $signId SNI: $signNotifyId sendIp $sendIp notified: $notified");
 		$dbh->do("UPDATE signNotifies SET notified = $notified, notifyTime=NOW() WHERE signNotifyId = $signNotifyId");	
 	}
 
 	select(undef,undef,undef,0.25);
 }
 
-print "Exiting\n" if($main::debug);
+slog("Exiting");
 
 unlink($pidFile);
 
@@ -180,3 +183,18 @@ sub sigterm {
 	my $sig = shift;
 	$main::alive = 0;
 }
+
+sub slog {
+	my $logFile = $main::logFile;
+
+	open(LOG,">>$logFile");
+	print LOG getTimestamp() . ": " . $msg . "\n";
+	print getTimestamp() . ": " .  $msg . "\n" if($main::debug);
+	close(LOG);
+}
+
+sub getTimestamp {
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
+        return sprintf("%02d/%02d/%04d-%02d:%02d:%02d",$mon+1,$mday,$year+1900,$hour,$min,$sec);
+}
+
