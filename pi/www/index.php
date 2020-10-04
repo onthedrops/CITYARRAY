@@ -10,6 +10,10 @@
 		User::getInstance()->addPreset($_REQUEST['PresetName']);
 	}
 
+	if(isset($_REQUEST['Shutdown'])) {
+		User::getInstance()->requestShutdown();
+	}
+
 	if(isset($_REQUEST['Activate'])) {
 		$presetId = $_REQUEST['presetId'];
 		$signMessageArray = User::getInstance()->getPreset($presetId);
@@ -109,7 +113,11 @@
 	</TABLE>
 	</FORM>
 
+
 	<?php showPresets(); ?>
+	<FORM METHOD=Post>
+		<INPUT TYPE="SUBMIT" NAME="Shutdown" VALUE="Shutdown"/>
+	</FORM>
 <?php
 
 function showPresets() {

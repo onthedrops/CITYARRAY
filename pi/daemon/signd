@@ -72,6 +72,8 @@ $signIpCache = {};
 
 $tickCounter = 0;
 
+$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+
 while($main::alive) {
 	my $state = $main::dry_pin->read;
 	if($state && !$main::dry_state) {
@@ -91,6 +93,11 @@ while($main::alive) {
 
 	if(!($tickCounter % 10)) {
 		$cmd = S2Config::getConfigValue('gitcmd');
+
+		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
+		if($shutdown) {
+			system("/sbin/shutdown -h now");
+		}
 
 		$sth = $dbh->prepare("SELECT updateId FROM updates WHERE updateVersion IS NULL");
 		$sth->execute();

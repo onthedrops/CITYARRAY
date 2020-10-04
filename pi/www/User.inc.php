@@ -14,6 +14,11 @@ class User {
         	$this->dbh = new SQLng();
 	}
 
+	public function requestShutdown()
+	{
+		$this->dbh->Query("UPDATE shutdown SET shutdown_requested = 1");
+	}
+
 	public function getSignGroupMessages($groupId)
 	{
 		$ret = array();
