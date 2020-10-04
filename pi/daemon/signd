@@ -96,6 +96,8 @@ while($main::alive) {
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
 		if($shutdown) {
+			print "Commanding shutdown\n" if($debug);
+			$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
 			system("/sbin/shutdown -h now");
 		}
 
