@@ -78,12 +78,14 @@ while($main::alive) {
 		print "High detected\n" if($debug);
 		$main::dry_state = 1;
 		# use LWP to switch to dry contact preset
-		$lwp->get("http://localhost/drycontact.php?contact=1");
+		$response = $lwp->get("http://localhost/drycontact.php?contact=1");
+		print "R: " . $response->{'_content'} . "\n";
 	} elsif(!$state && $main::dry_state) {
 		print "Low detected\n" if($debug);
 		$main::dry_state = 0;
 		# use LWP to switch to previous message
-		$lwp->get("http://localhost/drycontact.php?contact=0");
+		$response = $lwp->get("http://localhost/drycontact.php?contact=0");
+		print "R: " . $response->{'_content'} . "\n";
 	}
 
 
