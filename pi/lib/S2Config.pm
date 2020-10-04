@@ -349,6 +349,8 @@ sub configure
 			$main::xmode = $args->{$arg};
 		}
 
+		$self->{'config'}->{$arg} = $args->{$arg};
+
 		print $arg . " -> " . $self->{'config'}->{$arg} . "\n" if($main::debug & 65536);
 	}
 

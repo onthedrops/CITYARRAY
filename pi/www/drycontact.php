@@ -3,7 +3,7 @@
 	require_once('User.inc.php');
 
 
-	User::getInstance()->setUserId(1);
+	User::getInstance()->setUserId(2);
 
 	if(isset($_REQUEST['contact']) && $_REQUEST['contact'] == 1) {
 		$presetId = User::getInstance()->getPresetId('drycontact');
@@ -12,16 +12,19 @@
                         if($signData['messageId'] != 0)
                                 User::setSignMessage($signId, $signData['messageId']);
                 }
+		echo "Setting dry contact message\n";
 	} else if(isset($_REQUEST['contact']) && $_REQUEST['contact'] == 0) {
 		$dbh = User::getInstance()->getDBH();
 		$presetId = User::getInstance()->getPresetId('drycontact');
                 $signMessageArray = User::getInstance()->getPreset($presetId);
 		foreach ($signMessageArray as $signId => $signData) {
-			$messageId = $dbh->selectOne("SELECT messageId FROM signMessageArchive WHERE signId = $signId ORDER BY signArchiveId DESC LIMIT 2,1");
+			$notMessageId = $signData['messageId'];
+			$messageId = $dbh->selectOne("SELECT messageId FROM signMessageArchive WHERE signId = $signId AND messageId != $notMessageId ORDER BY signArchiveId DESC");
 			if($messageId) {
                                 User::setSignMessage($signId, $messageId);
 			}
 		}
+		echo "Clearing dry contact message\n";
 
 	}
 ?>
