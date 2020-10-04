@@ -182,10 +182,12 @@ unlink($pidFile);
 sub sigterm {
 	my $sig = shift;
 	$main::alive = 0;
+	slog("Got sig $sig shutting down");
 }
 
 sub slog {
 	my $logFile = $main::logFile;
+	my $msg = shift;
 
 	open(LOG,">>$logFile");
 	print LOG getTimestamp() . ": " . $msg . "\n";
