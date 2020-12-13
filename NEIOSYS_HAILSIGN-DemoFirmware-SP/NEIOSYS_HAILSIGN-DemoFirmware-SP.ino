@@ -201,11 +201,13 @@ void networkTask(void * pvParameters) {
                           char workbuf[256];
                         
                           HTTPClient http;
+                          sprintf(workbuf, "%s&ver=%s", signConfig.fetchHost, SIGN_VERSION);
 
-                          http.begin(signConfig.fetchHost);
-
+//                          http.begin(signConfig.fetchHost);
+                          http.begin(workbuf);
+                          
                           Serial.print("Fetching from ");
-                          Serial.println(signConfig.fetchHost);
+                          Serial.println(workbuf);
                         
                           int httpResponseCode = http.GET();
       
