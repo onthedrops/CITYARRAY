@@ -5,6 +5,6 @@ sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 rfkill unblock wlan
 
-apt-get install bind9
+apt-get install bind9 dnsutils
 
 
