@@ -6,5 +6,6 @@ sudo systemctl enable hostapd
 rfkill unblock wlan
 
 apt-get install bind9 dnsutils
+apt-get install isc-dhcp-server
 
 
