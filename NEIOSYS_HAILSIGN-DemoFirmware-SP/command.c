@@ -146,9 +146,7 @@ void command_upgrade(char *string) {
     sendlineBT("+OK commanding firmware update");
     networkState = 3;    
 #else    
-    networkState = 3;    
-    vled_off();
-    closeBT();
+   
     do_firmware_upgrade();
     openBT();
 #endif    
@@ -176,11 +174,20 @@ void command_info() {
 
 esp_err_t do_firmware_upgrade()
 {
+    networkState = 3;    
+    vled_off();
+    closeBT();
+    
+   slog("fetching sig");
    
    char *sig = get_firmware_sig();
+
+   slog(sig);
    
-   if(!sig)
+   if(!sig) {
+    slog("Failed to fetch sig");
     return ESP_ERR_TIMEOUT;
+   }
                          
     esp_http_client_config_t config = {
         .url = signConfig.upgradeURL,
