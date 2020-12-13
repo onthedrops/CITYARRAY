@@ -77,6 +77,64 @@ $tickCounter = 0;
 
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 
+# check to see if sqlUpdates table exists
+# if not, add it
+($exists) = $dbh->selectrow_array("SHOW TABLES LIKE 'sqlUpdates'");
+if(!$exists) {
+	$sql=<<EOF;
+	CREATE TABLE sqlUpdates (
+		sqlUpdateId int not null auto_increment primary key,
+		filename varchar(255),
+		loadTime timestamp
+	);
+EOF
+
+	if(!$dbh->do($sql)) {
+		print $DBI::errstr . "\n" . $sql . "\n" if($debug);
+	} else {
+		$exists = 1;	
+	}
+}
+
+if($exists) {
+
+	# iterate the directory vs the table, run all updates
+	my $updatepath = '/home/sign-firmware/pi/sql/updates';
+
+	opendir(DH,$updatepath);
+	while($file = readdir(DH)) {
+		$fullpath = $updatepath . '/' . $file;
+		
+		if(-f $fullpath && $file =~ /.*\.sql$/) {
+			print "Reading $fullpath" if($debug);
+			$fileq = $dbh->quote($file);
+			($already_installed) = $dbh->selectrow_array("SELECT filename FROM sqlUpdates WHERE filename = $fileq");
+			if(!$already_installed) {
+				open(F,"<$fullpath");
+				$buf = undef;
+				while($in = <F>) {
+					$buf .= $in;
+					if($in =~ /.*;.*/) {
+						if(!$dbh->do($buf)) {
+							print "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n" if($debug);
+						} else {
+							$sql = "INSERT INTO sqlUpdates SET filename=$fileq, loadTime=NOW()";
+							$dbh->do($sql);
+						}
+
+						$buf = undef;
+					}
+				}
+				close(F);
+			}
+		}
+	}
+	closedir(DH);
+
+}
+
+
+
 while($main::alive) {
 	my $state = $main::dry_pin->read;
 	if($state && !$main::dry_state) {
