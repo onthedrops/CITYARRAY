@@ -182,7 +182,7 @@ while($main::alive) {
 				$buf .= $in;
 			}
 			close(GIT);
-			$version = `(cd /home/solar-firmware ; git rev-parse HEAD)`;
+			$version = `(cd /home/sign-firmware ; git rev-parse HEAD)`;
 			slog("Version: $version");
 			chop($version);
 
@@ -215,21 +215,21 @@ while($main::alive) {
 		}
 
 		if($sendIp) {
-			$sock = new IO::Socket::INET(PeerAddr => $sendIp,
-                		PeerPort => 1234,
-                		Proto => 'udp', Timeout => 1);
+			# todo : send to helper process that actually handles notifications
 
-			if($sock) {
-				print $sock "\n";
-				select(undef,undef,undef,0.1);
-				print $sock "\n";
-				select(undef,undef,undef,0.1);
-				print $sock "\n";
-				close($sock);
 				$notified = 1;
-			} else {
-				$notified = -2;
-			}
+				$sock = new IO::Socket::INET(PeerAddr => $sendIp,
+       		         		PeerPort => 1234,
+       		         		Proto => 'udp', Timeout => 1);
+
+				if($sock) {
+					print $sock "\n";
+					select(undef,undef,undef,0.1);
+					print $sock "\n";
+					select(undef,undef,undef,0.1);
+					print $sock "\n";
+					close($sock);
+				} 
 		} else {
 			$notified = -1;
 		}
