@@ -131,7 +131,7 @@ function showSigns() {
 	echo "<BR><BR><TABLE>";
 	$signList = User::getInstance()->getSigns();
 	foreach($signList as $id => $name) {
-		$ver = User::getInstance()->getSignConfig($id, 'ver');
+		$ver = User::getInstance()->getSignVersion($id);
 		$auto = User::getInstance()->getSignConfig($id, 'auto');
 		if($auto) {
 			$autocb = "CHECKED";

@@ -55,7 +55,7 @@
 	}
 
 	if($signVersion != $_REQUEST['ver']) {
-		$signVersionq = $dbh->equote($signVersionq);
+		$signVersionq = $dbh->equote($_REQUEST['ver']);
 		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
 	}
 

@@ -212,6 +212,22 @@ class User {
 		return true;
 	}
 
+	public function getSignVersion($signId) 
+	{
+		if(!$this->userId)
+			return null;
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.signId, s.signVersion FROM signs s, signsXnetworks sn, usersXnetworks un WHERE s.signId = $signId AND s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId );
+
+		if($dbh->next_record()) {
+			return $dbh->f("signVersion");
+		}
+
+		return null;
+	}
+
+
 	public function getSignConfig($signId, $configKey)
 	{
 		if(!$this->userId)
