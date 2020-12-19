@@ -114,7 +114,7 @@ class User {
 		$dbh = $this->dbh;
 		
 
-		$dbh->Query("SELECT presetDataId FROM signPresetData WHERE presetId = " . $dbh->equote($presetId) . " AND signId = " . $dbh->equote($signId));
+		$dbh->Query("SELECT presetDataId FROM signPresetData WHERE presetId = " . $this->dbh->equote($presetId) . " AND signId = " . $this->dbh->equote($signId));
 		$dbh->next_record();
 
 		$presetDataId = $dbh->f("presetDataId");
@@ -197,6 +197,19 @@ class User {
 		}
 
 		return $ret;
+	}
+
+	public function setSignConfig($signId, $configKey, $configValue)
+	{
+		if(!$this->userId)
+			return false;
+
+		if(!$this->owns($signId)) 
+			return false;
+
+		$this->dbh->Query("REPLACE INTO signConfig SET signId = $signId, configKey = " . $this->dbh->equote($configKey) . ", configValue = " . $this->dbh->equote($configValue));
+	
+		return true;
 	}
 
 	public function getSignConfig($signId, $configKey)
