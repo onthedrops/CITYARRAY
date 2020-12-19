@@ -60,8 +60,14 @@
 	}
 
 	if($_REQUEST['ver'] != '0.12') {
-		echo "~!UPGRADE";
-		exit(0);
+		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
+		$dbh->next_record();
+		$auto = $dbh->f("configValue");
+
+		if($auto) {
+			echo '~!UPGRADE' . "\n";
+			exit(0);
+		}
 	}
 	
 	
