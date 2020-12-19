@@ -5,4 +5,4 @@ CREATE TABLE signConfig (
 	configKey varchar(64),
 	configValue varchar(255)
 );
-
+CREATE UNIQUE INDEX idxSignConfigIdKey ON signConfig(signId, configKey);

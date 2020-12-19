@@ -115,11 +115,32 @@
 
 
 	<?php showPresets(); ?>
+	<?php showSigns(); ?>
+
 	<FORM METHOD=Post>
 		<INPUT TYPE="SUBMIT" NAME="Shutdown" VALUE="Shutdown"/>
 	</FORM>
 <?php
 
+function showSigns() {
+	// show signs for this user, including current version 
+	// and automatic update checklist
+
+	echo "<BR><BR><TABLE>";
+	$signList = User::getInstance()->getSigns();
+	foreach($signList as $id => $name) {
+		$ver = User::getInstance()->getSignConfig($id, 'ver');
+		$auto = User::getInstance()->getSignConfig($id, 'auto');
+		if($auto) {
+			$autocb = "CHECKED";
+		} else {
+			$autocb = "";
+		}
+
+		echo "<TR BGCOLOR=#999999><TD>$name</TD><TD>Current version: $ver</TD><TD>Automatic update: <INPUT TYPE=Checkbox ID=$cbid $autocb> </TD></TR>\n";
+	}
+	echo "</TABLE>";
+}
 function showPresets() {
 	// get list of presets for this user
 	// add preset button

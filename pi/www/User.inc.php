@@ -199,6 +199,24 @@ class User {
 		return $ret;
 	}
 
+	public function getSignConfig($signId, $configKey)
+	{
+		if(!$this->userId)
+			return null;
+
+			
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.signId, sc.configValue FROM signs s, signsXnetworks sn, usersXnetworks un, signConfig sc WHERE s.signId = $signId AND s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId . " AND sc.signId = s.signId AND sc.configKey = " . $dbh->equote($configKey));
+
+		if($dbh->next_record()) {
+			return $dbh->f("configValue");
+		}
+
+		return null;
+
+	}
+
+
 
 	public static function getInstance()
 	{
