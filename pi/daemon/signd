@@ -14,7 +14,7 @@ push(@INC, $FindBin::Bin . "/../lib");
 require S2Config;
 require S2dbobj;
 
-S2Config::setup('../conf/signd.xml');
+S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
 
 $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
@@ -96,10 +96,13 @@ EOF
 	}
 }
 
+open(UPDATE,">>/var/log/update.log");
+
 if($exists) {
 
 	# iterate the directory vs the table, run all updates
 	my $updatepath = '/home/sign-firmware/pi/sql/updates';
+
 
 	opendir(DH,$updatepath);
 	while($file = readdir(DH)) {
@@ -107,6 +110,8 @@ if($exists) {
 		
 		if(-f $fullpath && $file =~ /.*\.sql$/) {
 			print "Reading $fullpath" if($debug);
+			print UPDATE "Reading $fullpath";
+
 			$fileq = $dbh->quote($file);
 			($already_installed) = $dbh->selectrow_array("SELECT filename FROM sqlUpdates WHERE filename = $fileq");
 			if(!$already_installed) {
@@ -117,7 +122,9 @@ if($exists) {
 					if($in =~ /.*;.*/) {
 						if(!$dbh->do($buf)) {
 							print "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n" if($debug);
+							print UPDATE "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n";
 						} else {
+							print UPDATE "$file error loaded\n" . $sql . "\n";
 							$sql = "INSERT INTO sqlUpdates SET filename=$fileq, loadTime=NOW()";
 							$dbh->do($sql);
 						}
@@ -131,9 +138,11 @@ if($exists) {
 	}
 	closedir(DH);
 
+} else {
+	print UPDATE "No sql update table detected so updates not run\n";
 }
 
-
+close(UPDATE);
 
 while($main::alive) {
 	my $state = $main::dry_pin->read;
