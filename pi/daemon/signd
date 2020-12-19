@@ -110,7 +110,7 @@ if($exists) {
 		
 		if(-f $fullpath && $file =~ /.*\.sql$/) {
 			print "Reading $fullpath" if($debug);
-			print UPDATE "Reading $fullpath";
+	#		print UPDATE "Reading $fullpath\n";
 
 			$fileq = $dbh->quote($file);
 			($already_installed) = $dbh->selectrow_array("SELECT filename FROM sqlUpdates WHERE filename = $fileq");
