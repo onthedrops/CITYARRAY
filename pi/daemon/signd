@@ -77,6 +77,8 @@ $tickCounter = 0;
 
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 
+$sendQueue = {};
+
 # check to see if sqlUpdates table exists
 # if not, add it
 ($exists) = $dbh->selectrow_array("SHOW TABLES LIKE 'sqlUpdates'");
@@ -215,27 +217,33 @@ while($main::alive) {
 		}
 
 		if($sendIp) {
-			# todo : send to helper process that actually handles notifications
+			$sendQueue->{$sendIp} = 3;
+			$notified = 1;
 
-				$notified = 1;
-				$sock = new IO::Socket::INET(PeerAddr => $sendIp,
-       		         		PeerPort => 1234,
-       		         		Proto => 'udp', Timeout => 1);
-
-				if($sock) {
-					print $sock "\n";
-					select(undef,undef,undef,0.1);
-					print $sock "\n";
-					select(undef,undef,undef,0.1);
-					print $sock "\n";
-					close($sock);
-				} 
 		} else {
 			$notified = -1;
 		}
 		
 		slog("SI: $signId SNI: $signNotifyId sendIp $sendIp notified: $notified");
 		$dbh->do("UPDATE signNotifies SET notified = $notified, notifyTime=NOW() WHERE signNotifyId = $signNotifyId");	
+	}
+		
+	foreach $sendIp (keys %{$sendQueue}) {
+		if($sendQueue->{$sendIp} == 0) {
+			delete $sendQueue->{$sendIp};
+		} else {
+			$sendQueue->{$sendIp}--;
+		}
+  $notified = 1;
+                $sock = new IO::Socket::INET(PeerAddr => $sendIp,
+                	PeerPort => 1234,
+                        Proto => 'udp', Timeout => 1);
+
+		if($sock) {
+               		print $sock "\n";
+                }
+
+		slog("SITX $sendIp ");
 	}
 
 	select(undef,undef,undef,0.25);
