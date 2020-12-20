@@ -1,5 +1,5 @@
 <?php
 	echo "Shutting down Pi";
 
-	  User::getInstance()->requestShutdown();
+	 User::getInstance()->requestShutdown();
 ?>
