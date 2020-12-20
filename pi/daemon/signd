@@ -167,10 +167,26 @@ while($main::alive) {
 		$cmd = S2Config::getConfigValue('gitcmd');
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
-		if($shutdown) {
-			slog("Commanding shutdown");
-			$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
-			system("/sbin/shutdown -h now");
+		if($shutdown == 1) {
+			if(S2Config::getConfigValue('noshutdown')) {
+				slog("Shutdown commanded but disabled");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+			} else {
+				slog("Commanding shutdown");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
+				system("/sbin/shutdown -h now");
+			}
+		}
+
+		if($shutdown == 3) {
+			if(S2Config::getConfigValue('noshutdown')) {
+				slog("Shutdown (reboot) commanded but disabled");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+			} else {
+				slog("Commanding shutdown (reboot)");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
+				system("/sbin/shutdown -r now");
+			}
 		}
 
 		$sth = $dbh->prepare("SELECT updateId FROM updates WHERE updateVersion IS NULL");
