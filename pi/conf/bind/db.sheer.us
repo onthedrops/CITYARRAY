@@ -1,0 +1,13 @@
+$ORIGIN us.
+sheer   14400   IN      SOA     ns1.sheer.us. sheer.sheer.us. (
+                2020000006 28800 14400 3600000 86400 )
+        14400   IN      NS      ns1.sheer.us.
+        14400   IN      A       10.101.101.1
+        14400   IN      MX      10 mxpri.sheer.us.
+        14400   IN      MX      20 mxbackup.sheer.us.
+
+$ORIGIN sheer.us.
+
+ns1             14400   IN      A       10.101.101.1
+
+www	IN	A	10.101.101.1

@@ -49,6 +49,8 @@
 ?>
 <script>
 	var xmlReq = new XMLHttpRequest();
+	var xmlCbReq = new XMLHttpRequest();
+
 
 	function groupChange(e) {
 		var value = document.getElementById('selGroup').value;
@@ -115,10 +117,34 @@
 
 
 	<?php showPresets(); ?>
+	<?php showSigns(); ?>
+
 	<FORM METHOD=Post>
 		<INPUT TYPE="SUBMIT" NAME="Shutdown" VALUE="Shutdown"/>
 	</FORM>
 <?php
+
+function showSigns() {
+	// show signs for this user, including current version 
+	// and automatic update checklist
+
+	echo "<BR><BR><TABLE>";
+	$signList = User::getInstance()->getSigns();
+	foreach($signList as $id => $name) {
+		$ver = User::getInstance()->getSignVersion($id);
+		$auto = User::getInstance()->getSignConfig($id, 'auto');
+		if($auto) {
+			$autocb = "CHECKED";
+		} else {
+			$autocb = "";
+		}
+
+		$cbid = "cb_" . $id;
+
+		echo "<TR BGCOLOR=#999999><TD>$name</TD><TD>Current version: $ver</TD><TD>Automatic update: <INPUT TYPE=Checkbox ID=$cbid onchange=\"autoUpdateChange($id, $cbid)\" $autocb> </TD></TR>\n";
+	}
+	echo "</TABLE>";
+}
 
 function showPresets() {
 	// get list of presets for this user
@@ -180,4 +206,22 @@ function showPreset($presetId) {
 	echo "<TD ALIGN=Right><INPUT TYPE=Submit VALUE=Activate NAME=Activate></TD></TR></TABLE></FORM>";
 	
 }
+?>
+
+
+<script>
+	function autoUpdateChange(id, cbid)
+	{
+		var value = 0; 
+		if(cbid.checked)
+			value = 1;
+
+                xmlCbReq.open('POST', '/signConfigDO.php?signId=' + id + '&key=auto&value=' + value, true)
+		xmlCbReq.withCredentials=true;
+		xmlCbReq.send();
+		
+	}
+
+</script>
+
 

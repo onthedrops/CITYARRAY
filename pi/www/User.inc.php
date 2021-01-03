@@ -14,9 +14,9 @@ class User {
         	$this->dbh = new SQLng();
 	}
 
-	public function requestShutdown()
+	public function requestShutdown($mode=1)
 	{
-		$this->dbh->Query("UPDATE shutdown SET shutdown_requested = 1");
+		$this->dbh->Query("UPDATE shutdown SET shutdown_requested = " . $this->dbh->equote($mode));
 	}
 
 	public function getSignGroupMessages($groupId)
@@ -114,7 +114,7 @@ class User {
 		$dbh = $this->dbh;
 		
 
-		$dbh->Query("SELECT presetDataId FROM signPresetData WHERE presetId = " . $dbh->equote($presetId) . " AND signId = " . $dbh->equote($signId));
+		$dbh->Query("SELECT presetDataId FROM signPresetData WHERE presetId = " . $this->dbh->equote($presetId) . " AND signId = " . $this->dbh->equote($signId));
 		$dbh->next_record();
 
 		$presetDataId = $dbh->f("presetDataId");
@@ -198,6 +198,53 @@ class User {
 
 		return $ret;
 	}
+
+	public function setSignConfig($signId, $configKey, $configValue)
+	{
+		if(!$this->userId)
+			return false;
+
+		if(!$this->owns($signId)) 
+			return false;
+
+		$this->dbh->Query("REPLACE INTO signConfig SET signId = $signId, configKey = " . $this->dbh->equote($configKey) . ", configValue = " . $this->dbh->equote($configValue));
+	
+		return true;
+	}
+
+	public function getSignVersion($signId) 
+	{
+		if(!$this->userId)
+			return null;
+
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.signId, s.signVersion FROM signs s, signsXnetworks sn, usersXnetworks un WHERE s.signId = $signId AND s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId );
+
+		if($dbh->next_record()) {
+			return $dbh->f("signVersion");
+		}
+
+		return null;
+	}
+
+
+	public function getSignConfig($signId, $configKey)
+	{
+		if(!$this->userId)
+			return null;
+
+			
+		$dbh = $this->dbh;
+		$dbh->Query("SELECT s.signId, sc.configValue FROM signs s, signsXnetworks sn, usersXnetworks un, signConfig sc WHERE s.signId = $signId AND s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId . " AND sc.signId = s.signId AND sc.configKey = " . $dbh->equote($configKey));
+
+		if($dbh->next_record()) {
+			return $dbh->f("configValue");
+		}
+
+		return null;
+
+	}
+
 
 
 	public static function getInstance()

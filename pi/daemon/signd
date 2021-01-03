@@ -14,7 +14,7 @@ push(@INC, $FindBin::Bin . "/../lib");
 require S2Config;
 require S2dbobj;
 
-S2Config::setup('../conf/signd.xml');
+S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
 
 $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
@@ -77,6 +77,75 @@ $tickCounter = 0;
 
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 
+$sendQueue = {};
+
+# check to see if sqlUpdates table exists
+# if not, add it
+($exists) = $dbh->selectrow_array("SHOW TABLES LIKE 'sqlUpdates'");
+if(!$exists) {
+	$sql=<<EOF;
+	CREATE TABLE sqlUpdates (
+		sqlUpdateId int not null auto_increment primary key,
+		filename varchar(255),
+		loadTime timestamp
+	);
+EOF
+
+	if(!$dbh->do($sql)) {
+		print $DBI::errstr . "\n" . $sql . "\n" if($debug);
+	} else {
+		$exists = 1;	
+	}
+}
+
+open(UPDATE,">>/var/log/update.log");
+
+if($exists) {
+
+	# iterate the directory vs the table, run all updates
+	my $updatepath = '/home/sign-firmware/pi/sql/updates';
+
+
+	opendir(DH,$updatepath);
+	while($file = readdir(DH)) {
+		$fullpath = $updatepath . '/' . $file;
+		
+		if(-f $fullpath && $file =~ /.*\.sql$/) {
+			print "Reading $fullpath" if($debug);
+	#		print UPDATE "Reading $fullpath\n";
+
+			$fileq = $dbh->quote($file);
+			($already_installed) = $dbh->selectrow_array("SELECT filename FROM sqlUpdates WHERE filename = $fileq");
+			if(!$already_installed) {
+				open(F,"<$fullpath");
+				$buf = undef;
+				while($in = <F>) {
+					$buf .= $in;
+					if($in =~ /.*;.*/) {
+						if(!$dbh->do($buf)) {
+							print "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n" if($debug);
+							print UPDATE "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n";
+						} else {
+							print UPDATE "$file error loaded\n" . $sql . "\n";
+							$sql = "INSERT INTO sqlUpdates SET filename=$fileq, loadTime=NOW()";
+							$dbh->do($sql);
+						}
+
+						$buf = undef;
+					}
+				}
+				close(F);
+			}
+		}
+	}
+	closedir(DH);
+
+} else {
+	print UPDATE "No sql update table detected so updates not run\n";
+}
+
+close(UPDATE);
+
 while($main::alive) {
 	my $state = $main::dry_pin->read;
 	if($state && !$main::dry_state) {
@@ -98,10 +167,26 @@ while($main::alive) {
 		$cmd = S2Config::getConfigValue('gitcmd');
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
-		if($shutdown) {
-			slog("Commanding shutdown");
-			$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
-			system("/sbin/shutdown -h now");
+		if($shutdown == 1) {
+			if(S2Config::getConfigValue('noshutdown')) {
+				slog("Shutdown commanded but disabled");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+			} else {
+				slog("Commanding shutdown");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
+				system("/sbin/shutdown -h now");
+			}
+		}
+
+		if($shutdown == 3) {
+			if(S2Config::getConfigValue('noshutdown')) {
+				slog("Shutdown (reboot) commanded but disabled");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+			} else {
+				slog("Commanding shutdown (reboot)");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 2");
+				system("/sbin/shutdown -r now");
+			}
 		}
 
 		$sth = $dbh->prepare("SELECT updateId FROM updates WHERE updateVersion IS NULL");
@@ -115,7 +200,7 @@ while($main::alive) {
 				$buf .= $in;
 			}
 			close(GIT);
-			$version = `(cd /home/solar-firmware ; git rev-parse HEAD)`;
+			$version = `(cd /home/sign-firmware ; git rev-parse HEAD)`;
 			slog("Version: $version");
 			chop($version);
 
@@ -148,27 +233,33 @@ while($main::alive) {
 		}
 
 		if($sendIp) {
-			$sock = new IO::Socket::INET(PeerAddr => $sendIp,
-                		PeerPort => 1234,
-                		Proto => 'udp', Timeout => 1);
+			$sendQueue->{$sendIp} = 3;
+			$notified = 1;
 
-			if($sock) {
-				print $sock "\n";
-				select(undef,undef,undef,0.1);
-				print $sock "\n";
-				select(undef,undef,undef,0.1);
-				print $sock "\n";
-				close($sock);
-				$notified = 1;
-			} else {
-				$notified = -2;
-			}
 		} else {
 			$notified = -1;
 		}
 		
 		slog("SI: $signId SNI: $signNotifyId sendIp $sendIp notified: $notified");
 		$dbh->do("UPDATE signNotifies SET notified = $notified, notifyTime=NOW() WHERE signNotifyId = $signNotifyId");	
+	}
+		
+	foreach $sendIp (keys %{$sendQueue}) {
+		if($sendQueue->{$sendIp} == 0) {
+			delete $sendQueue->{$sendIp};
+		} else {
+			$sendQueue->{$sendIp}--;
+		}
+  $notified = 1;
+                $sock = new IO::Socket::INET(PeerAddr => $sendIp,
+                	PeerPort => 1234,
+                        Proto => 'udp', Timeout => 1);
+
+		if($sock) {
+               		print $sock "\n";
+                }
+
+		slog("SITX $sendIp ");
 	}
 
 	select(undef,undef,undef,0.25);

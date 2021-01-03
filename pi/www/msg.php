@@ -42,15 +42,32 @@
 	}
 
 	// step 2 - find sign via netId and signRemoteId
-	$dbh->Query("SELECT signId, signIp FROM signs WHERE networkId = $netId AND signRemoteId = $signIdq");
+	$dbh->Query("SELECT signId, signIp, signVersion FROM signs WHERE networkId = $netId AND signRemoteId = $signIdq");
 	$dbh->next_record();
 	$signId = $dbh->f("signId");
 	$signIp = $dbh->f("sighIp");
+	$signVersion = $dbh->f("signVersion");
 
 	if(!$signId) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 bad signId', true, 500);
 		echo "Bad signId";
 		exit(0);
+	}
+
+	if($signVersion != $_REQUEST['ver']) {
+		$signVersionq = $dbh->equote($_REQUEST['ver']);
+		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
+	}
+
+	if($_REQUEST['ver'] != '0.12') {
+		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
+		$dbh->next_record();
+		$auto = $dbh->f("configValue");
+
+		if($auto) {
+			echo '~!UPGRADE' . "\n";
+			exit(0);
+		}
 	}
 	
 	
