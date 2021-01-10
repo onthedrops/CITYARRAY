@@ -31,7 +31,8 @@ Copyright (c)
 //#include "minimumplus1.h"
 //#include "HUNTER_16.h"
 //#include "hunter.h"
-#include "arialbd_font_manual.h"
+//#include "arialbd_font_manual.h"
+#include "impact_font.h"
 //#include "ChunkFive-Regular_font.h"
 
 // *****************************************************************************
@@ -485,6 +486,14 @@ DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
           sprintf(s,"%d -> %c %d",stringPtr, c, c);
           slog(s);
 #endif
+
+           if(c == ' ') {
+            // todo: make this value software configurable
+            stringArrayRed+=SPACE_WIDTH;
+            stringArrayGreen+=SPACE_WIDTH;
+            bitmap->nColumns+=SPACE_WIDTH;
+            continue;
+          }
           
          for(i=0;i<width;i++) {
             if(font[c-32][i]  || c == ' ') {
@@ -671,6 +680,14 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
          c = string[stringPtr];
           if(c == '\n')
           continue;
+
+          if(c == ' ') {
+            // todo: make this value software configurable
+            stringArrayRed+=SPACE_WIDTH;
+            stringArrayGreen+=SPACE_WIDTH;
+            s1Columns+=SPACE_WIDTH;
+            continue;
+          }
                      
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
@@ -722,7 +739,15 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
 
           if(c == '\n')
           continue;        
-           
+
+            if(c == ' ') {
+            // todo: make this value software configurable
+            stringArrayRed+=SPACE_WIDTH;
+            stringArrayGreen+=SPACE_WIDTH;
+            s2Columns+=SPACE_WIDTH;
+            continue;
+          }
+          
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
               switch(color) {

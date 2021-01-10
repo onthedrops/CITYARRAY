@@ -98,6 +98,8 @@ typedef struct
   uint8_t gBrightness;
 } DISPLAY_DATA;
 
+#define SPACE_WIDTH 5
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Application Initialization and Functions

@@ -9,6 +9,9 @@
 #include <HTTPClient.h>
 #include <string.h>
 
+//#include <BluetoothSerial.h>
+
+
   
 uint8_t bitmap1[1024];
 
@@ -157,7 +160,7 @@ uint8_t rBrightness = 0xFF;
 static char s[64];
 const char* ssid = "sheer";
 const char* password = "";
-String serverName = "http://10.101.1.3/NS/test3.txt";
+String serverName = "http://10.101.1.3/NS/test.txt";
 unsigned long lastTime = 0;
 unsigned long timerDelay = 5000;
 
