@@ -37,7 +37,10 @@
 		User::getInstance()->deletePreset($presetId);
 	}
 
-
+	if(isset($_REQUEST['Remove'])) {
+		$messageId = $_REQUEST['messageId'];
+		User::getInstance()->deleteMessage($messageId);
+	}
 
 	if(isset($_REQUEST['Submit'])) {
 		$messageId = Message::saveMessage($_REQUEST['taMsg']);
@@ -211,8 +214,18 @@ function showPreset($presetId) {
 	echo "<TD><INPUT TYPE=Submit VALUE=Save NAME=Save></TD>";
 	echo "<TD ALIGN=Right><INPUT TYPE=Submit VALUE=Activate NAME=Activate><?TD><TD>";
 	echo "<INPUT TYPE=SUbmit VALUE=Delete NAME=Delete></TD></TR></TABLE></FORM>";
-	
 }
+echo "</TABLE>";
+
+	echo "Remove: <FORM><SELECT NAME=messageId>";
+	
+	$messageArray = User::getInstance()->getMessages();
+	foreach ($messageArray as $messageId => $message) {
+			echo "<OPTION VALUE=$messageId>" . $message . "</OPTION>";
+	}	
+	echo "</SELECT><INPUT TYPE=Submit VALUE=Remove NAME=Remove>";
+	echo "</FORM>";
+	
 ?>
 
 

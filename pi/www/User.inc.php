@@ -109,6 +109,17 @@ class User {
 
 	}
 	
+	public function deleteMessage($messageId)
+	{
+		if(!$this->userId)
+			return false;
+
+		
+		$dbh = $this->dbh;
+		$dbh->Query("DELETE FROM messages WHERE userId = " . $this->userId . " AND messageId  = $messageId");
+
+	}
+
 	public function deletePreset($presetId)
 	{
 		if(!$this->userId)
