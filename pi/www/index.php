@@ -31,6 +31,12 @@
 			User::getInstance()->setPresetValue($presetId, $signId, $signValue);
 		}
 	}
+	
+	if(isset($_REQUEST['Delete'])) {
+		$presetId = $_REQUEST['presetId'];
+		User::getInstance()->deletePreset($presetId);
+	}
+
 
 
 	if(isset($_REQUEST['Submit'])) {
@@ -203,7 +209,8 @@ function showPreset($presetId) {
 
 	echo "<TABLE><TR>";
 	echo "<TD><INPUT TYPE=Submit VALUE=Save NAME=Save></TD>";
-	echo "<TD ALIGN=Right><INPUT TYPE=Submit VALUE=Activate NAME=Activate></TD></TR></TABLE></FORM>";
+	echo "<TD ALIGN=Right><INPUT TYPE=Submit VALUE=Activate NAME=Activate><?TD><TD>";
+	echo "<INPUT TYPE=SUbmit VALUE=Delete NAME=Delete></TD></TR></TABLE></FORM>";
 	
 }
 ?>

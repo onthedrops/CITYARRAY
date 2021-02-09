@@ -109,6 +109,16 @@ class User {
 
 	}
 	
+	public function deletePreset($presetId)
+	{
+		if(!$this->userId)
+			return false;
+
+		
+		$dbh = $this->dbh;
+		$dbh->Query("DELETE FROM signPresets WHERE presetId = $presetId");
+	}
+
 	public function setPresetValue($presetId, $signId, $signValue)
 	{
 		$dbh = $this->dbh;
