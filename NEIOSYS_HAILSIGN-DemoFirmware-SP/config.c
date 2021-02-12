@@ -18,10 +18,13 @@ void setupNVS()
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         // NVS partition was truncated and needs to be erased
         // Retry nvs_flash_init
+        slog("setupNVS() flash init running");
+        
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
 
+     slog("opening flash");
      err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
 }
 
@@ -29,6 +32,8 @@ void loadConfig()
 {
   // first, get the bluetooth ID key. If it doesn't exist, create one
   int signId = 0;
+
+  slog("loading configuration");
   
   signConfig.ssid = getConfigKey("ssid");
   signConfig.password = getConfigKey("password");
