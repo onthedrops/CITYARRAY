@@ -53,6 +53,7 @@ void loadConfig()
   slog("loading configuration");
   
   signConfig.ssid = getConfigKey("ssid");
+  
   signConfig.password = getConfigKey("password");
 
   if(signConfig.password && !strcmp(signConfig.password, "~!EMPTY")) {
@@ -65,21 +66,26 @@ void loadConfig()
     char workbuf[64];
     signId = rand();
     sprintf(workbuf,"SIGN-%d",signId);
+    slog("No configuration found for bluetooth ID.. setting to");
+    slog(workbuf);
     putConfigKey("bluetoothID",workbuf);
     sprintf(workbuf,"%d",signId);
     putConfigKey("signID",workbuf);
   }
   
   signConfig.bluetoothID = getConfigKey("bluetoothID");
-  if(!signConfig.bluetoothID)
+  if(!signConfig.bluetoothID) {
     signConfig.bluetoothID = strdup("SIGN-INIT");
-    
+    slog("Still no configuration found for bluetoothID, setting to SIGN-INIT");
+  }
+  
   signConfig.signID = getConfigKey("signID");
   signConfig.fetchHost = getConfigKey("fetchHost"); 
   signConfig.upgradeURL = getConfigKey("upgradeURL");
   signConfig.sigURL = getConfigKey("sigURL");
 
 }
+
 char *getConfigKey(char *key)
 {
     size_t required_size;
