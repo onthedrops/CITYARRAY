@@ -26,6 +26,11 @@ void setupNVS()
 
      slog("opening flash");
      err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
+     if(err) {
+      char workbuf[64];
+      sprintf(workbuf,"Failed to nvs_open: %d", err);
+      slog(workbuf);
+     }
 }
 
 void loadConfig()
@@ -54,6 +59,9 @@ void loadConfig()
   }
   
   signConfig.bluetoothID = getConfigKey("bluetoothID");
+  if(!signConfig.bluetoothID)
+    signConfig.bluetoothID = strdup("SIGN-INIT");
+    
   signConfig.signID = getConfigKey("signID");
   signConfig.fetchHost = getConfigKey("fetchHost"); 
   signConfig.upgradeURL = getConfigKey("upgradeURL");

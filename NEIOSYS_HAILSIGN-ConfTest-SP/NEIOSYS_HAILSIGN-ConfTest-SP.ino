@@ -199,7 +199,8 @@ void networkTask(void * pvParameters) {
                     break;     
          case 2:    if ((millis() - lastTime) > timerDelay) {
                         if(WiFi.status() != WL_CONNECTED) {
-                        networkState = 0;
+                          WiFi.disconnect();
+                          networkState = 0;
                     } else {
                        if(signConfig.fetchHost) {
                          char workbuf[256];
