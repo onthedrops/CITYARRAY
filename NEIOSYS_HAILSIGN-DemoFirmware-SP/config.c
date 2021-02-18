@@ -24,6 +24,14 @@ void setupNVS()
         err = nvs_flash_init();
     }
 
+    if(err) {
+      char workbuf2[64];
+      sprintf(workbuf2,"nvs_flash_init() returned error: %d", err);
+      slog(workbuf2);
+    } else {
+      slog("nvs_flash_init ran OK");
+    }
+
      slog("opening flash");
      err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
      if(err) {
