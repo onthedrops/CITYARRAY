@@ -42,6 +42,8 @@ void setupNVS()
                   slog(workbuf);
                }
         }
+     } else {
+       slog("Flash opened successfully");
      }
 }
 
@@ -53,6 +55,7 @@ void loadConfig()
   slog("loading configuration");
   
   signConfig.ssid = getConfigKey("ssid");
+  slog("Read first key");
   
   signConfig.password = getConfigKey("password");
 
@@ -77,12 +80,16 @@ void loadConfig()
   if(!signConfig.bluetoothID) {
     signConfig.bluetoothID = strdup("SIGN-INIT");
     slog("Still no configuration found for bluetoothID, setting to SIGN-INIT");
+  } else {
+    slog("Bluetooth key loaded OK -- key contents");
+    slog(signConfig.bluetoothID);
   }
   
   signConfig.signID = getConfigKey("signID");
   signConfig.fetchHost = getConfigKey("fetchHost"); 
   signConfig.upgradeURL = getConfigKey("upgradeURL");
   signConfig.sigURL = getConfigKey("sigURL");
+  slog("Configuration loaded");
 
 }
 
