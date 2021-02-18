@@ -30,6 +30,18 @@ void setupNVS()
       char workbuf[64];
       sprintf(workbuf,"Failed to nvs_open: %d", err);
       slog(workbuf);
+
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+        if(err) {
+           sprintf(workbuf, "Failed to nvs_flash_init: %d", err);
+        } else {
+               err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
+               if(err) {
+                  sprintf(workbuf, "*still* failed to nvs_open post reformat: %d", err);
+                  slog(workbuf);
+               }
+        }
      }
 }
 
