@@ -51,19 +51,32 @@ void setupNVS()
                }
         }
      } else {
+#ifdef _XDEBUG      
        slog("Flash opened successfully");
+#endif
      }
 }
 
+void formatNVS() 
+{
+   ESP_ERROR_CHECK(nvs_flash_erase());
+   err = nvs_flash_init();
+
+   reboot();
+}
 void loadConfig()
 {
   // first, get the bluetooth ID key. If it doesn't exist, create one
   int signId = 0;
 
+#ifdef _XDEBUG
   slog("loading configuration");
+#endif
   
   signConfig.ssid = getConfigKey("ssid");
+#ifdef _XDEBUG
   slog("Read first key");
+#endif
   
   signConfig.password = getConfigKey("password");
 
@@ -75,6 +88,7 @@ void loadConfig()
   signConfig.bluetoothID = getConfigKey("bluetoothID");
   if(!signConfig.bluetoothID) {
     char workbuf[64];
+    srand(esp_random());
     signId = rand();
     sprintf(workbuf,"SIGN-%d",signId);
     slog("No configuration found for bluetooth ID.. setting to");
@@ -89,16 +103,19 @@ void loadConfig()
     signConfig.bluetoothID = strdup("SIGN-INIT");
     slog("Still no configuration found for bluetoothID, setting to SIGN-INIT");
   } else {
+#ifdef XDEBUG
     slog("Bluetooth key loaded OK -- key contents");
     slog(signConfig.bluetoothID);
+#endif
   }
   
   signConfig.signID = getConfigKey("signID");
   signConfig.fetchHost = getConfigKey("fetchHost"); 
   signConfig.upgradeURL = getConfigKey("upgradeURL");
   signConfig.sigURL = getConfigKey("sigURL");
+#ifdef XDEBUG
   slog("Configuration loaded");
-
+#endif
 }
 
 char *getConfigKey(char *key)

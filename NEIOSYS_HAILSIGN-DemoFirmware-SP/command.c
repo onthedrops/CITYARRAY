@@ -24,6 +24,7 @@ void processCommand(char *string)
             case 'G': comamnd_get_key(string); return;
             case 'M': command_set_message(string); return; 
             case 'R': command_reboot(string); return;
+            case 'F': command_format(string); return;
             case 'U': command_upgrade(string); return;
             case 'V': command_version(); return;  
             case '?': command_info(); return;
@@ -129,6 +130,16 @@ void command_reboot(char *string) {
      sendlineBT("]"); return;
   } else {
     reboot();
+  }
+}
+
+void command_format(char *string) {
+  if(strcmp(string,"F xyzzy")) {
+    sendBT("-ERR incorrect password: [");
+    sendBT(string);
+    sendlineBT("]"); return;
+  } else {
+    formatNVS();
   }
 }
 

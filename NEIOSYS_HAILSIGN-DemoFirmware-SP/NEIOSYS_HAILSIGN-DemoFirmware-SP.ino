@@ -94,9 +94,9 @@ void setup()
   openBT();
   
   
-  
+#ifdef _XDEBUG  
   slog("Writing WFN");
-
+#endif
           
   testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
   
@@ -107,7 +107,10 @@ void setup()
 */
 
  #ifdef T
+ #ifdef _XDEBUG
    slog("Starting network task");
+ #endif
+ 
    xTaskCreatePinnedToCore(
                     networkTask,   // Function to implement the task 
                     "netTask", // Name of the task 
@@ -378,9 +381,13 @@ void closeBT()
 
 void openBT()
 {
+#ifdef _XDEBUG
  slog("openBT starting");
+#endif
  SerialBT.begin(signConfig.bluetoothID);   
+#ifdef _XDEBUG
  slog("openBT returning");
+#endif
 }
 
 char *get_firmware_sig()
