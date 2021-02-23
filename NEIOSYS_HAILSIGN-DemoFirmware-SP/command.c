@@ -185,6 +185,10 @@ void command_info() {
 
 esp_err_t do_firmware_upgrade()
 {
+    if(!signConfig.upgradeURL) {
+      return ESP_ERR_TIMEOUT;
+    }
+
     networkState = 3;    
     vled_off();
     closeBT();
@@ -199,7 +203,8 @@ esp_err_t do_firmware_upgrade()
     slog("Failed to fetch sig");
     return ESP_ERR_TIMEOUT;
    }
-                         
+
+    
     esp_http_client_config_t config = {
         .url = signConfig.upgradeURL,
         .cert_pem = sig,

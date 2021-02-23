@@ -29,10 +29,14 @@ void setupNVS()
       sprintf(workbuf2,"nvs_flash_init() returned error: %d", err);
       slog(workbuf2);
     } else {
+#ifdef _XDEBUG
       slog("nvs_flash_init ran OK");
+#endif
     }
 
+#ifdef _XDEBUG
      slog("opening flash");
+#endif
      err = nvs_open("storage", NVS_READWRITE, &my_nvs_handle);
      if(err) {
       char workbuf[64];
@@ -60,8 +64,7 @@ void setupNVS()
 void formatNVS() 
 {
    ESP_ERROR_CHECK(nvs_flash_erase());
-   err = nvs_flash_init();
-
+   esp_err_t err = nvs_flash_init();
    reboot();
 }
 void loadConfig()
