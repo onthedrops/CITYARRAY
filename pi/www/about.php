@@ -1,11 +1,11 @@
 Pi Demo Kit V0.15 
 <?php
 	include_once('firmware_version.php');
-	$fp = fopen("/home/sign-firmware/pi/www/git.txt");
+	$fp = fopen("/home/sign-firmware/pi/www/git.txt", "r");
 	$gitmd = fgets($fp);
 	fclose($fp);
 
-	echo "<BR>Firmware version: " . firmware_version() . "<BR><HR>";
+	echo " $gitmd <BR>Firmware version: " . firmware_version() . "<BR><HR>";
 	
 	$fp = popen("ifconfig -a", "r");
 	while($str = fgets($fp)) {
