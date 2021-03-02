@@ -479,7 +479,7 @@ DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
          }
 
          char c = string[stringPtr];
-         if(c == '\n')
+         if(c == '\n' || c == '\r')
           continue;
 
 #ifdef STRLOG
@@ -582,7 +582,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
      for(stringPtr = 0; stringPtr < s1len; stringPtr++) {
         
          c = string[stringPtr];
-         if(c == '\n')
+         if(c == '\n' || c == '\r')
           continue;            
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
@@ -599,7 +599,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
     for(stringPtr = 0; stringPtr < s2len; stringPtr++) {
         
          c = string2[stringPtr];
-         if(c == '\n')
+         if(c == '\n' || c == '\r')
           continue; 
            
          for(i=0;i<width;i++) { 
@@ -678,7 +678,7 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
          }
          
          c = string[stringPtr];
-          if(c == '\n')
+          if(c == '\n' || c == '\r')
           continue;
 
           if(c == ' ') {
@@ -737,7 +737,7 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
           continue;
          }
 
-          if(c == '\n')
+          if(c == '\n' || c == '\r')
           continue;        
 
             if(c == ' ') {
