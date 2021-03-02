@@ -5,7 +5,7 @@ Pi Demo Kit V0.15
 	$gitmd = fgets($fp);
 	fclose($fp);
 
-	echo " $gitmd <BR>Firmware version: " . firmware_version() . "<BR><HR>";
+	echo " $gitmd <BR>Sign firmware version: " . firmware_version() . "<BR><HR>";
 	
 	$fp = popen("ifconfig -a", "r");
 	while($str = fgets($fp)) {
