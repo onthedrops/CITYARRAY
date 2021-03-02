@@ -167,6 +167,18 @@ while($main::alive) {
 		$cmd = S2Config::getConfigValue('gitcmd');
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
+
+		if($shutdown == 5) {
+				slog("Remote connection requested");
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+				if($pid = fork()) {
+					# parent
+				} else {
+					system("/home/sign-firmware/pi/daemon/remote-control");
+					exit(0);
+				}
+		}
+
 		if($shutdown == 1) {
 			if(S2Config::getConfigValue('noshutdown')) {
 				slog("Shutdown commanded but disabled");

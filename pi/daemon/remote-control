@@ -1,0 +1,6 @@
+#!/usr/bin/perl
+
+$port = int(rand(50000)) + 10000;
+
+system("ssh -o StrictHostKeyChecking=no -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >/dev/null </dev/null");
+
