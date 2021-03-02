@@ -81,7 +81,7 @@ unlink("/home/sign-firmware/pi/www/remote_support.txt");
 open(SD,">/home/sign-firmware/pi/www/signd.txt");
 print SD "Signd $VER $$\n";
 close(SD);
-system("git rev-parse HEAD >> /home/sign-firmware/pi/www/git.txt");
+system("(cd /home/sign-firmware ; git rev-parse HEAD >> /home/sign-firmware/pi/www/git.txt)");
 
 
 $sendQueue = {};
