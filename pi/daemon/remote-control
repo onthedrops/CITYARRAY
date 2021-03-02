@@ -2,5 +2,11 @@
 
 $port = int(rand(50000)) + 10000;
 
-system("ssh -o StrictHostKeyChecking=no -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >/dev/null </dev/null");
+open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
+print RS "Opening $port\n";
+close(RS);
+
+system("ssh -o StrictHostKeyChecking=no -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
+
+unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
