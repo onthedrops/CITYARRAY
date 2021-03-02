@@ -79,7 +79,7 @@ $tickCounter = 0;
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 open(SD,">/home/sign-firmware/pi/www/signd.txt");
-print SD "Signd $VER $$\n";
+print SD "Signd $VER (running as pid $$)\n";
 close(SD);
 system("(cd /home/sign-firmware ; git rev-parse HEAD >> /home/sign-firmware/pi/www/git.txt)");
 

@@ -4,8 +4,19 @@ Pi Demo Kit V0.15
 	$fp = fopen("/home/sign-firmware/pi/www/git.txt", "r");
 	$gitmd = fgets($fp);
 	fclose($fp);
+	echo $gitmd;
+	if(file_exists("/home/sign-firmware/pi/www/signd.txt")) {
+		$fp = fopen("/home/sign-firmware/pi/www/signd.txt", "r");
+		while($str = fgets($fp)) {
+			echo "<BR>$str";
+		}
 
-	echo " $gitmd <BR>Sign firmware version: " . firmware_version() . "<BR><HR>";
+		fclose($fp);
+	} else {
+		echo "Signd signature file missing\n";
+	}
+
+	echo "<BR>Sign firmware version: " . firmware_version() . "<BR><HR>";
 	
 	$fp = popen("ifconfig -a", "r");
 	while($str = fgets($fp)) {
@@ -27,16 +38,6 @@ Pi Demo Kit V0.15
 ?>
 <HR>
 <?php
-	if(file_exists("/home/sign-firmware/pi/www/signd.txt")) {
-		$fp = fopen("/home/sign-firmware/pi/www/signd.txt", "r");
-		while($str = fgets($fp)) {
-			echo "<BR>$str";
-		}
-
-		fclose($fp);
-	} else {
-		echo "Signd signature file missing\n";
-	}
 	
 ?>
 <HR>
