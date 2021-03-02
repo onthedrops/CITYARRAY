@@ -59,7 +59,7 @@
 		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
 	}
 
-	if($_REQUEST['ver'] != '0.15.3') {
+	if($_REQUEST['ver'] != '0.15.4') {
 		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
 		$dbh->next_record();
 		$auto = $dbh->f("configValue");
