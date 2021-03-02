@@ -76,6 +76,7 @@ $signIpCache = {};
 $tickCounter = 0;
 
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
 $sendQueue = {};
 
