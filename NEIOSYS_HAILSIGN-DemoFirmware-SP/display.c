@@ -584,6 +584,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
          c = string[stringPtr];
          if(c == '\n' || c == '\r')
           continue;            
+          
          for(i=0;i<width;i++) { 
            if(cfont[c-32][i]  || c == ' ') {
             *stringArray |= cfont[c-32][i];
@@ -683,9 +684,9 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
 
           if(c == ' ') {
             // todo: make this value software configurable
-            stringArrayRed+=SPACE_WIDTH;
-            stringArrayGreen+=SPACE_WIDTH;
-            s1Columns+=SPACE_WIDTH;
+            stringArrayRed+=SPACE2_WIDTH;
+            stringArrayGreen+=SPACE2_WIDTH;
+            s1Columns+=SPACE2_WIDTH;
             continue;
           }
                      
@@ -742,9 +743,9 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
 
             if(c == ' ') {
             // todo: make this value software configurable
-            stringArrayRed+=SPACE_WIDTH;
-            stringArrayGreen+=SPACE_WIDTH;
-            s2Columns+=SPACE_WIDTH;
+            stringArrayRed+=SPACE2_WIDTH;
+            stringArrayGreen+=SPACE2_WIDTH;
+            s2Columns+=SPACE2_WIDTH;
             continue;
           }
           

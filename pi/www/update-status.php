@@ -14,6 +14,7 @@
 
 	if(isset($updatetext) && $updatetext) {
 		echo "<PRE>$updatetext</PRE>";
+		echo "<HR><A HREF=/index.php>Return home</A>";
 	} else {
 		sleep(1);
 		header("Location: /update-status.php?updateId=" . $id);
