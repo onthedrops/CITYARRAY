@@ -1,6 +1,7 @@
 <?php
 
 	include_once('lib/mysqlng.inc.php');
+	include_once('firmware_version.php');
 
 	$dbh = new SQLng();
 
@@ -59,7 +60,7 @@
 		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
 	}
 
-	if($_REQUEST['ver'] != '0.15.5') {
+	if($_REQUEST['ver'] != firmware_version()) {
 		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
 		$dbh->next_record();
 		$auto = $dbh->f("configValue");

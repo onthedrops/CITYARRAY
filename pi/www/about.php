@@ -1,6 +1,8 @@
-Pi Demo Kit V0.15
-<HR>
+Pi Demo Kit V0.15<BR>
 <?php
+	include_once('firmware_version.php');
+	echo "Firmware version: " . firmware_version() . "<BR><HR>";
+	
 	$fp = popen("ifconfig -a", "r");
 	while($str = fgets($fp)) {
 		echo "<BR>$str";

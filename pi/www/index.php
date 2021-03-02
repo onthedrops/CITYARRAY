@@ -1,6 +1,7 @@
 <?php
 
 	require('header.inc.php');
+	include_once('firmware_version.php');
 	
 
 	
@@ -138,6 +139,7 @@ function showSigns() {
 	// and automatic update checklist
 
 	echo "<BR><BR><TABLE>";
+	echo "Current firmware version: " . firmware_version();
 	$signList = User::getInstance()->getSigns();
 	foreach($signList as $id => $name) {
 		$ver = User::getInstance()->getSignVersion($id);
