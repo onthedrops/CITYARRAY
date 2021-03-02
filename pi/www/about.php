@@ -1,7 +1,11 @@
-Pi Demo Kit V0.15<BR>
+Pi Demo Kit V0.15 
 <?php
 	include_once('firmware_version.php');
-	echo "Firmware version: " . firmware_version() . "<BR><HR>";
+	$fp = fopen("/home/sign-firmware/pi/www/git.txt");
+	$gitmd = fgets($fp);
+	fclose($fp);
+
+	echo "<BR>Firmware version: " . firmware_version() . "<BR><HR>";
 	
 	$fp = popen("ifconfig -a", "r");
 	while($str = fgets($fp)) {
@@ -15,6 +19,8 @@ Pi Demo Kit V0.15<BR>
 		while($str = fgets($fp)) {
 			echo "<BR>$str";
 		}
+
+		fclose($fp);
 	} else {
 		echo "Remote support not active\n";
 	}
@@ -26,6 +32,8 @@ Pi Demo Kit V0.15<BR>
 		while($str = fgets($fp)) {
 			echo "<BR>$str";
 		}
+
+		fclose($fp);
 	} else {
 		echo "Signd signature file missing\n";
 	}
@@ -38,4 +46,5 @@ Pi Demo Kit V0.15<BR>
 	while($str = fgets($fp)) {
 		echo "<BR>$str";
 	}
+	fclose($fp);
 
