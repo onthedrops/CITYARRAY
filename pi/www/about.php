@@ -37,10 +37,6 @@ Pi Demo Kit V0.15
 	}
 ?>
 <HR>
-<?php
-	
-?>
-<HR>
 <PRE>
 <?php
 	$fp = popen("ps auxw", "r");
