@@ -157,7 +157,7 @@ function showSigns() {
 
 		$cbid = "cb_" . $id;
 
-		echo "<TR BGCOLOR=#999999><TD>$name</TD><TD>Current version: $ver</TD><TD>Automatic update: <INPUT TYPE=Checkbox ID=$cbid onchange=\"autoUpdateChange($id, $cbid)\" $autocb> </TD></TR>\n";
+		echo "<TR BGCOLOR=#999999><TD>$name</TD><TD>sign running version: $ver</TD><TD>Automatic update: <INPUT TYPE=Checkbox ID=$cbid onchange=\"autoUpdateChange($id, $cbid)\" $autocb> </TD></TR>\n";
 	}
 	echo "</TABLE>";
 }
