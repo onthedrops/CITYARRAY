@@ -7,6 +7,7 @@ use RPi::Pin;
 use RPi::Const qw(:all);
 use LWP::UserAgent;
 
+$VER = "0.15";
 
 
 push(@INC, $FindBin::Bin . "/../lib");
@@ -77,6 +78,10 @@ $tickCounter = 0;
 
 $dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
+open(SD,">/home/sign-firmware/pi/www/signd.txt");
+print SD "Signd $VER $$\n";
+close(SD);
+
 
 $sendQueue = {};
 
