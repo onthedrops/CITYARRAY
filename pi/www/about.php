@@ -1,3 +1,7 @@
+<?php
+
+        require('header.inc.php');
+?>
 Pi Demo Kit V0.15 
 <?php
 	include_once('firmware_version.php');

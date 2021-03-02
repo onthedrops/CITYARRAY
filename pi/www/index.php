@@ -15,6 +15,10 @@
 		User::getInstance()->requestShutdown();
 	}
 
+	if(isset($_REQUEST['Reboot'])) {
+		User::getInstance()->requestShutdown(3);
+	}
+
 	if(isset($_REQUEST['Activate'])) {
 		$presetId = $_REQUEST['presetId'];
 		$signMessageArray = User::getInstance()->getPreset($presetId);
@@ -131,6 +135,7 @@
 
 	<FORM METHOD=Post>
 		<INPUT TYPE="SUBMIT" NAME="Shutdown" VALUE="Shutdown"/>
+		<INPUT TYPE="SUBMIT" NAME="Reboot" VALUE="Reboot"/>
 	</FORM>
 <?php
 
