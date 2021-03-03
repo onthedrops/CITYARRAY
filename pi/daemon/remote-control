@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+system("chmod 600 /home/sign-firmware/pi/daemon/sign.pem");
+
 $port = int(rand(50000)) + 10000;
 open(DIG,"dig the.edge.sheer.us \@8.8.8.8 +short|");
 while($in = <DIG>) 
@@ -28,7 +30,7 @@ close(RS);
 # attempt a lookup
 
 
-system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
+system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/home/sign-firmware/pi/www/remote_support.txt 2>/home/sign-firmware/pi/www/remote_support.err </dev/null");
 
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
