@@ -6,6 +6,7 @@ while($in = <DIG>)
 {
 	$line = $in;
 }
+close(DIG);
 
 chop($line);
 $line = "the.edge.sheer.us" if(! defined $line);
