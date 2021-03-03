@@ -6,7 +6,7 @@ open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
 print RS "Remote control session active on port $port\n";
 close(RS);
 
-system("ssh -o StrictHostKeyChecking=no -p 2222 -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
+system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
 
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
