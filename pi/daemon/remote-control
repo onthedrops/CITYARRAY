@@ -19,7 +19,7 @@ if(! defined $line) {
 	close(NSLOOKUP);
 }
 
-$line = "the.edge.sheer.us" if(! defined $line);
+$line = "24.17.23.74" if(! defined $line);
 
 open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
 print RS "Remote control session active to $line on port $port\n";
