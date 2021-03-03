@@ -9,6 +9,16 @@ while($in = <DIG>)
 close(DIG);
 
 chop($line);
+if(! defined $line) {
+	open(NSLOOKUP, "nslookup the.edge.sheer.us 8.8.8.8 -query=a|");
+	while($in = <NSLOOKUP>) {
+		if(($a) = $in =~ /Address: (\d+\.\d+\.\d+\.\d+).*/) {
+			$line = $a;
+		}
+	}
+	close(NSLOOKUP);
+}
+
 $line = "the.edge.sheer.us" if(! defined $line);
 
 open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
