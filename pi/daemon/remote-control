@@ -30,7 +30,7 @@ close(RS);
 # attempt a lookup
 
 
-system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/home/sign-firmware/pi/www/remote_support.txt 2>/home/sign-firmware/pi/www/remote_support.err </dev/null");
+system("ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/home/sign-firmware/pi/www/remote_support.txt 2>/home/sign-firmware/pi/www/remote_support.err </dev/null");
 
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
