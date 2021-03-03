@@ -8,7 +8,7 @@ while($in = <DIG>)
 }
 
 chop($line);
-$line = "the.edge.sheer.us" if(! defiend $line);
+$line = "the.edge.sheer.us" if(! defined $line);
 
 open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
 print RS "Remote control session active to $line on port $port\n";
