@@ -1,12 +1,23 @@
 #!/usr/bin/perl
 
 $port = int(rand(50000)) + 10000;
+open(DIG,"dig the.edge.sheer.us \@8.8.8.8 +short|");
+while($in = <DIG>) 
+{
+	$line = $in;
+}
+
+chop($line);
+$line = "the.edge.sheer.us" if(! defiend $line);
 
 open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
-print RS "Remote control session active on port $port\n";
+print RS "Remote control session active to $line on port $port\n";
 close(RS);
 
-system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
+# attempt a lookup
+
+
+system("ssh -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
 
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 
