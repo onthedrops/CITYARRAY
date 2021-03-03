@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 system("chmod 600 /home/sign-firmware/pi/daemon/sign.pem");
+unlink("/home/sign-firmware/pi/www/remote_support.err");
 
 $port = int(rand(50000)) + 10000;
 open(DIG,"dig the.edge.sheer.us \@8.8.8.8 +short|");
