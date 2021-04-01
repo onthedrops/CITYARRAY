@@ -16,7 +16,7 @@
 
 #include <BluetoothSerial.h>
 
-
+#define HTTP_INBUF_SIZE 256
   
 uint32_t emptyBitmapRed[64] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -145,9 +145,9 @@ void initTask(void * pvParameters) {
  
 }
 
-char outputstring[256];
-volatile char workstring[256];
-char inputstring[256];
+char outputstring[HTTP_INBUF_SIZE];
+volatile char workstring[HTTP_INBUF_SIZE];
+char inputstring[HTTP_INBUF_SIZE];
 char readchar;
 
 int inputPtr = 0;
@@ -220,8 +220,10 @@ void networkTask(void * pvParameters) {
                           if (httpResponseCode>0) {
                             String payload = http.getString();
 
-                            payload.toCharArray((char *)workstring,payload.length()+1);
-                            workstring[payload.length()+1] = 0;
+                            if(payload.length() < HTTP_INBUF_SIZE) {
+                              payload.toCharArray((char *)workstring,payload.length()+1);
+                              workstring[payload.length()+1] = 0;
+                            }
                           } 
                       
                          http.end();
