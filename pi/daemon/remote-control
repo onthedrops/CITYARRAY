@@ -1,12 +1,43 @@
 #!/usr/bin/perl
 
+system("chmod 600 /home/sign-firmware/pi/daemon/sign.pem");
+unlink("/home/sign-firmware/pi/www/remote_support.err");
+
 $port = int(rand(50000)) + 10000;
+open(DIG,"dig the.edge.sheer.us \@8.8.8.8 +short|");
+while($in = <DIG>) 
+{
+	$line = $in;
+}
+close(DIG);
+
+chop($line);
+if(! defined $line) {
+	open(NSLOOKUP, "nslookup the.edge.sheer.us 8.8.8.8 -query=a|");
+	while($in = <NSLOOKUP>) {
+		if(($a) = $in =~ /Address: (\d+\.\d+\.\d+\.\d+).*/) {
+			$line = $a;
+		}
+	}
+	close(NSLOOKUP);
+}
+
+$line = "24.17.23.74" if(! defined $line);
 
 open(RS,">/home/sign-firmware/pi/www/remote_support.txt");
-print RS "Remote control session active on port $port\n";
+print RS "Remote control session active to $line on port $port\n";
 close(RS);
 
-system("ssh -o StrictHostKeyChecking=no -i /home/sign-firmware/pi/daemon/sign.pem sign\@the.edge.sheer.us -R $port:localhost:22 \"./remote $port\" >>/tmp/remote_support.txt </dev/null");
+# attempt a lookup
+
+
+$result = system("ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 45678 -i /home/sign-firmware/pi/daemon/sign.pem sign\@$line -R $port:localhost:22 \"./remote $port\" >>/home/sign-firmware/pi/www/remote_support.txt 2>/home/sign-firmware/pi/www/remote_support.err </dev/null");
+
+if($result) {
+	open(ERR,">>/home/sign-firmware/pi/www/remote_support.err");
+	print ERR "Resultcode : $result\n";
+	close(ERR);
+}
 
 unlink("/home/sign-firmware/pi/www/remote_support.txt");
 

@@ -39,6 +39,13 @@ Pi Demo Kit V0.15
 	} else {
 		echo "Remote support not active\n";
 	}
+
+	if(file_exists("/home/sign-firmware/pi/www/remote_support.err")) {
+		$fp = fopen("/home/sign-firmware/pi/www/remote_support.err", "r");
+		while($str = fgets($fp)) {
+			echo "<BR>Error: $str";
+		}
+	}
 ?>
 <HR>
 <PRE>

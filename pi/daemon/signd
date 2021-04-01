@@ -180,8 +180,10 @@ while($main::alive) {
 				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
 				if($pid = fork()) {
 					# parent
+					slog("Remote connection forked as $pid");
 				} else {
-					system("/home/sign-firmware/pi/daemon/remote-control");
+					$result = system("/home/sign-firmware/pi/daemon/remote-control");
+					slog("Result of remote-control: $result");
 					exit(0);
 				}
 		}
