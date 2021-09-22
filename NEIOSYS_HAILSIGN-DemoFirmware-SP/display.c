@@ -644,7 +644,7 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2, char padd
       }
       
       int width = 6;
-      int arraySize = sizeof(uint16_t) * (maxlen * (width+1));
+      int arraySize = sizeof(uint16_t) * ((maxlen * (width+1)) + padding);
       
       uint16_t *stringArrayRed = malloc(arraySize);
       uint16_t *stringArrayGreen = malloc(arraySize);
