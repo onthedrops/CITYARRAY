@@ -432,13 +432,13 @@ int noCommandLen(char *string)
   return ret;
 }
 
-DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
+DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string, char padding)
 {
       int width = 12;
       int arraySize = sizeof(uint16_t) * (noCommandLen(string) * (width + 1));
 
-      uint16_t *stringArrayRed = malloc(arraySize);
-      uint16_t *stringArrayGreen = malloc(arraySize);
+      uint16_t *stringArrayRed = malloc(arraySize+padding);
+      uint16_t *stringArrayGreen = malloc(arraySize+padding);
  
       memset(stringArrayRed, 0, arraySize);
       memset(stringArrayGreen, 0, arraySize);
@@ -515,6 +515,14 @@ DISPLAY_SBITMAP_2BIT *Write_String_2Bit(char *string)
          stringArrayGreen++;
          bitmap->nColumns++;
          
+      }
+
+      for(i=0;i<padding;i++) {
+        *stringArrayRed = 0;
+        stringArrayRed++;
+        *stringArrayGreen = 0;
+        stringArrayGreen++;
+        bitmap->nColumns++;
       }
 
     return bitmap;
@@ -621,7 +629,7 @@ DISPLAY_SBITMAP_1BIT *Write_2HString_1Bit(char *string, char *string2)
     return bitmap;
 }
 
-DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
+DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2, char padding)
 {
       int maxlen;
       int s1len = noCommandLen(string);
@@ -772,6 +780,14 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2)
       if(s1Columns > s2Columns)
         bitmap->nColumns = s1Columns;
       else bitmap->nColumns = s2Columns;
+      
+      for(i=0;i<padding;i++) {
+        *stringArrayRed = 0;
+        stringArrayRed++;
+        *stringArrayGreen = 0;
+        stringArrayGreen++;
+        bitmap->nColumns++;
+      }
       
     return bitmap;
 }

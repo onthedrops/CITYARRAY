@@ -66,7 +66,8 @@ extern "C" {
 #define BRIGHTNESS_PRECISION_BITS 4
 #define BRIGHTNESS_PRECISION_BITS_MINUS_1 3
 
-#define SIGN_VERSION "0.15.5"
+#define SIGN_VERSION "0.15.6"
+#define SCREEN_BUFFER_COUNT 8
 
 #ifdef  __cplusplus
 }

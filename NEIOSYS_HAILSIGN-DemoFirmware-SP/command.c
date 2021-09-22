@@ -8,6 +8,7 @@
 #include "esp_https_ota.h"
 
 extern int networkState;
+extern char newMessage;
 extern uint8_t gBrightness;
 extern uint8_t rBrightness;
 
@@ -120,6 +121,7 @@ void command_set_message(char *string) {
      sendlineBT("]"); return;
   }
 
+  newMessage = 1;
   sprintf(workstring, "%s", msgptr);
 }
 

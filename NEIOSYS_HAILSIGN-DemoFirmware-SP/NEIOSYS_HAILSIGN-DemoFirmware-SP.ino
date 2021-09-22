@@ -17,6 +17,8 @@
 #include <BluetoothSerial.h>
 
 #define HTTP_INBUF_SIZE 256
+#define SCREEN_BUFFER_SIZE 64
+#define PAGE_DELAY 100
   
 uint32_t emptyBitmapRed[64] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -98,7 +100,7 @@ void setup()
   slog("Writing WFN");
 #endif
           
-  testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ");
+  testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ",6);
   
 /*
    if(!SerialBT.begin("ESP32")){
@@ -146,9 +148,15 @@ void initTask(void * pvParameters) {
 }
 
 char outputstring[HTTP_INBUF_SIZE];
+char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
+char currentScreen=0;
+char maxScreen=0;
 volatile char workstring[HTTP_INBUF_SIZE];
+volatile char newMessage;
+char newDisplay = 0;
 char inputstring[HTTP_INBUF_SIZE];
 char readchar;
+char currentPage;
 
 int inputPtr = 0;
 volatile int networkState = 0;
@@ -223,6 +231,7 @@ void networkTask(void * pvParameters) {
                             if(payload.length() < HTTP_INBUF_SIZE) {
                               payload.toCharArray((char *)workstring,payload.length()+1);
                               workstring[payload.length()+1] = 0;
+                              newMessage = 1;
                             }
                           } 
                       
@@ -289,47 +298,84 @@ void loop()
       }
     }
  
-     if(strcmp((char *)workstring,outputstring)) {
+     if(newMessage) {
+        newMessage = 0;
         Serial.print("New message: [");
         Serial.print((char *)workstring);
         Serial.println("]");
 
-           sprintf(outputstring, "%s", workstring);
-           
-           Clear_SBitmap2(testBitmap3);
-           
-           if(strstr(outputstring,"\n")) {
+        sprintf(outputstring, "%s", workstring);
 
-                if(strstr(outputstring,"~!UPGRADE")) {
-                  do_firmware_upgrade();
-                }
+           
+
+        if(strstr(outputstring,"~!UPGRADE")) {
+          do_firmware_upgrade();
+        }
                 
-                if(strstr(outputstring,"~!<")) {
-                  scrollVal = -1;  
-                } else if(strstr(outputstring,"~!>")) {
-                  scrollVal = 1;
-                }
+        if(strstr(outputstring,"~!<")) {
+          scrollVal = -1;  
+        } else if(strstr(outputstring,"~!>")) {
+          scrollVal = 1;
+        }
+
+        // split output string into pages
+        // ~!P is page command
+        char p = 0;
+        int i;
+        int j=0;
+        maxScreen = 0;
+              
+        for(i=0;i<strlen(outputstring);i++) {
+          if(outputstring[i] == '~' && outputstring[i+1] == '!' && outputstring[i+2] == 'P') {
+            i+=2;
+            pagestring[p][j] = '\0';
+            j=0;
+            if(p<SCREEN_BUFFER_COUNT-1)
+              p++;  
+          } else {
+            if(j<SCREEN_BUFFER_SIZE)
+              pagestring[p][j++] = outputstring[i];
+          }
+        } // end for loop to populate screen
+
+       pagestring[p][j] = '\0';
+       maxScreen = p;
+       
+       if(currentScreen > maxScreen)
+        currentScreen = 0;
+        
+       newDisplay = 1;           
+    } // end of scan for newline. 
+           
+    if(newDisplay) {
+       Serial.print("New display: [");
+        Serial.print((char *)pagestring[currentScreen]);
+        Serial.println("]");
+ 
+        Clear_SBitmap2(testBitmap3);
+       
+        newDisplay = 0;
+        if(strstr(pagestring[currentScreen],"\n")) {
+          char workBuf[256];
+          sprintf(workBuf, pagestring[currentScreen]);
+          char *line2 = strstr(workBuf,"\n");
+          char *line2_2 = line2;
+          line2_2++;
+          if(*line2_2 == '\0') {
+            *line2 = '\0';
                 
-                char workBuf[256];
-                sprintf(workBuf, outputstring);
-                char *line2 = strstr(workBuf,"\n");
-                char *line2_2 = line2;
-                line2_2++;
-                if(*line2_2 == '\0') {
-                    *line2 = '\0';
-                
-                    testBitmap3 = Write_String_2Bit(outputstring);
-                } else {
+             testBitmap3 = Write_String_2Bit(outputstring,6);
+           } else {
                 *line2 = '\0';
                 line2++;
                 Serial.print("Workbuf:");
                 Serial.print(workBuf);
                 Serial.print("line2:");
                 Serial.print(line2);
-                testBitmap3 = Write_2HString_2Bit(workBuf,line2);    
+                testBitmap3 = Write_2HString_2Bit(workBuf,line2,6);    
                 }
            } else {
-            testBitmap3 = Write_String_2Bit(outputstring);
+            testBitmap3 = Write_String_2Bit(pagestring[currentScreen],6);
            }
      }
       
@@ -340,9 +386,15 @@ void loop()
     else   Update_Bitmap_Window(emptyBitmap1Bit, testBitmap2, 63);
   */
 
-     if(testBitmap3->nColumns > 64)
+     if(testBitmap3->nColumns > 64) {
       Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, scrollInt % testBitmap3->nColumns);
-      else Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, 63);
+        if(!(scrollInt % testBitmap3->nColumns))
+            switchPage();
+     } else {
+        Update_CBitmap_Window(emptyBitmap1BitRed, emptyBitmap1BitGreen, testBitmap3, 63);
+        if(!(scrollInt % PAGE_DELAY))
+          switchPage();
+     }
 
     scrollInt += scrollVal;
     
@@ -350,11 +402,32 @@ void loop()
            DISPLAY_Brightness_Set(rBrightness, gBrightness);
 
   }
+
+ 
+  
 //---------------------------------------------
 //For testing purpose only
 //---------------------------------------------
 }
 
+ void switchPage()
+  {
+    // add one to current page, check to see if we are past max screen
+    if(maxScreen == 0)
+      return;
+
+    scrollInt = 0;
+    
+    if(currentScreen == maxScreen) {
+      newDisplay = 1;
+      currentScreen = 0;
+      return;
+    }
+
+    currentScreen++;
+    newDisplay =1;
+  }
+  
 void slog(char *p)
 {
    Serial.println(p);
