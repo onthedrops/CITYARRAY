@@ -113,6 +113,7 @@ void setup()
 #ifdef _XDEBUG  
   slog("Writing WFN");
 #endif
+
   for(r=0;r<SCREEN_BUFFER_COUNT;r++)
     pagestring[r][0] = '\0';
     

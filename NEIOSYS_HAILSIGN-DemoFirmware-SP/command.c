@@ -33,6 +33,7 @@ void processCommand(char *string)
             case 'U': command_upgrade(string); return;
             case 'V': command_version(); return;  
             case '?': command_info(); return;
+            case 'P': command_pages(string); return;
             case '+': command_brightness_up(); return;
             case '-': command_brightness_down(); return;
           }
@@ -177,7 +178,7 @@ void command_version() {
 }
 
 void command_info() {
-  char workbuf[64];
+  char workbuf[256];
   int i;
   
   sendlineBT("+OK INFO BLOCK TO EOF");
@@ -189,18 +190,35 @@ void command_info() {
   sendlineBT(workbuf);
   sprintf(workbuf, "Current screen %d max screen %d", currentScreen, maxScreen);
   sendlineBT(workbuf);
-  sendlineBT("Dumping master buffer");
-  sendlineBT(outputstring);
-  sendlineBT("Dumping page buffers");
-  for(i=0;i<SCREEN_BUFFER_COUNT;i++) {
-    sprintf(workbuf,"%d: " , i);
-    sendBT(workbuf);
-    sendlineBT(pagestring[i]);
-  }
+  /*sprintf(workbuf, "Master buffer: [%s]", outputstring);
   
+  sendlineBT(workbuf);
+  sendlineBT("Page buffers");
+  for(i=0;i<SCREEN_BUFFER_COUNT;i++) {
+    sprintf(workbuf,"%d: %s" , i, pagestring[i]);
+    sendlineBT(workbuf);
+    //sendlineBT(pagestring[i]);
+  }
+  */
   sendlineBT("EOF");
 }
 
+void command_pages() {
+  char workbuf[256];
+  int i;
+    sprintf(workbuf, "Current screen %d max screen %d", currentScreen, maxScreen);
+  sendlineBT(workbuf);
+   sprintf(workbuf, "Master buffer: [%s]", workstring);
+  sendlineBT(workbuf);
+  sendlineBT("Page buffers");
+  for(i=0;i<=maxScreen;i++) {
+    sprintf(workbuf,"%d: [%s]" , i, pagestring[i]);
+    sendlineBT(workbuf);
+  }
+  
+  sendlineBT("EOF");
+
+}
 esp_err_t do_firmware_upgrade()
 {
     if(!signConfig.upgradeURL) {
