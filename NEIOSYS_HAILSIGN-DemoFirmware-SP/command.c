@@ -9,6 +9,10 @@
 
 extern int networkState;
 extern char newMessage;
+extern char currentScreen;
+extern char outputstring;
+extern char maxScreen;
+extern char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
 extern uint8_t gBrightness;
 extern uint8_t rBrightness;
 
@@ -174,6 +178,8 @@ void command_version() {
 
 void command_info() {
   char workbuf[64];
+  int i;
+  
   sendlineBT("+OK INFO BLOCK TO EOF");
   sprintf(workbuf,"heap largest block: %d", heap_caps_get_free_size(MALLOC_CAP_8BIT) );
   sendlineBT(workbuf);
@@ -181,6 +187,16 @@ void command_info() {
   sendlineBT(workbuf);
   sprintf(workbuf, "Network state: %d", networkState);
   sendlineBT(workbuf);
+  sprintf(workbuf, "Current screen %d max screen %d", currentScreen, maxScreen);
+  sendlineBT(workbuf);
+  sendlineBT("Dumping master buffer");
+  sendlineBT(outputstring);
+  sendlineBT("Dumping page buffers");
+  for(i=0;i<SCREEN_BUFFER_COUNT;i++) {
+    sprintf(workbuf,"%d: " , i);
+    sendBT(workbuf);
+    sendlineBT(pagestring[i]);
+  }
   
   sendlineBT("EOF");
 }

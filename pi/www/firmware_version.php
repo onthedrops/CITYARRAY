@@ -1,6 +1,6 @@
 <?php
 function firmware_version()
 {
-	return "0.15.7";
+	return "0.15.8";
 }
 

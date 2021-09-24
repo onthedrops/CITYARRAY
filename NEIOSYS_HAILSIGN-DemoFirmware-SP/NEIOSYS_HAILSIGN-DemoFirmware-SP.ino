@@ -78,6 +78,21 @@ AsyncUDP udp;
 
 
 int r,c;
+char outputstring[HTTP_INBUF_SIZE];
+char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
+char currentScreen=0;
+char maxScreen=0;
+volatile char workstring[HTTP_INBUF_SIZE];
+volatile char newMessage;
+char newDisplay = 0;
+char inputstring[HTTP_INBUF_SIZE];
+char readchar;
+char currentPage;
+
+int inputPtr = 0;
+volatile int networkState = 0;
+int execNow = 0;
+
 void setup() 
 {
   
@@ -98,8 +113,12 @@ void setup()
 #ifdef _XDEBUG  
   slog("Writing WFN");
 #endif
-          
-  testBitmap3 = Write_String_2Bit("... WAITING FOR NETWORK ... ",6);
+  for(r=0;r<SCREEN_BUFFER_COUNT;r++)
+    pagestring[r][0] = '\0';
+    
+  sprintf(pagestring[7], "... V%s WAITING FOR NETWORK ...",SIGN_VERSION);
+  
+  testBitmap3 = Write_String_2Bit(pagestring[7], 6);
   
 /*
    if(!SerialBT.begin("ESP32")){
@@ -146,20 +165,7 @@ void initTask(void * pvParameters) {
  
 }
 
-char outputstring[HTTP_INBUF_SIZE];
-char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
-char currentScreen=0;
-char maxScreen=0;
-volatile char workstring[HTTP_INBUF_SIZE];
-volatile char newMessage;
-char newDisplay = 0;
-char inputstring[HTTP_INBUF_SIZE];
-char readchar;
-char currentPage;
 
-int inputPtr = 0;
-volatile int networkState = 0;
-int execNow = 0;
 
 
 void networkTask(void * pvParameters) {
