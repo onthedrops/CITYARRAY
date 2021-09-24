@@ -16,8 +16,7 @@
 
 #include <BluetoothSerial.h>
 
-#define HTTP_INBUF_SIZE 256
-#define SCREEN_BUFFER_SIZE 64
+
 #define PAGE_DELAY 100
   
 uint32_t emptyBitmapRed[64] = {

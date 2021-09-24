@@ -14,7 +14,7 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_https_ota.h"
-
+#include "global_variables.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ extern void reboot();
 extern char *get_firmware_sig();
 esp_err_t do_firmware_upgrade();
 
-extern volatile char workstring[256];
+extern volatile char workstring[HTTP_INBUF_SIZE];
 
 
 
