@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+use IO::Socket::INET;
+
+$sendIp = shift || "10.101.101.25";
+
+ $sock = new IO::Socket::INET(PeerAddr => $sendIp,
+                        PeerPort => 1234,
+                        Proto => 'udp', Timeout => 1);
+
+                if($sock) {
+                        print $sock "\n";
+                }
+
+print "Sent\n";
+
