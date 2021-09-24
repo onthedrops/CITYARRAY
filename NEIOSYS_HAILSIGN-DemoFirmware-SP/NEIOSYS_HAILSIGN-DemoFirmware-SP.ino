@@ -370,7 +370,7 @@ void loop()
           if(*line2_2 == '\0') {
             *line2 = '\0';
                 
-             testBitmap3 = Write_String_2Bit(outputstring,6);
+             testBitmap3 = Write_String_2Bit(pagestring[currentScreen],6);
            } else {
                 *line2 = '\0';
                 line2++;
@@ -419,10 +419,10 @@ void loop()
  void switchPage()
   {
     // add one to current page, check to see if we are past max screen
+    scrollInt = 0;
+
     if(maxScreen == 0)
       return;
-
-    scrollInt = 0;
     
     if(currentScreen == maxScreen) {
       newDisplay = 1;
