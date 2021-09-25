@@ -16,6 +16,8 @@ extern char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
 extern uint8_t gBrightness;
 extern uint8_t rBrightness;
 
+#define STR_C_VERSION "_-_-" SIGN_VERSION
+
 
 void processCommand(char *string)
 {        
@@ -173,7 +175,7 @@ void command_upgrade(char *string) {
 
 void command_version() {
   sendBT("+OK VERSION [");
-  sendBT(SIGN_VERSION);
+  sendBT(STR_C_VERSION);
   sendlineBT("]");
 }
 

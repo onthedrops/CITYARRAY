@@ -78,6 +78,7 @@ AsyncUDP udp;
 
 
 int r,c;
+
 char outputstring[HTTP_INBUF_SIZE];
 char pagestring[SCREEN_BUFFER_COUNT][SCREEN_BUFFER_SIZE];
 char currentScreen=0;

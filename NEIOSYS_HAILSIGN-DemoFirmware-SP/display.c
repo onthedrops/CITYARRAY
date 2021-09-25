@@ -780,7 +780,19 @@ DISPLAY_SBITMAP_2BIT *Write_2HString_2Bit(char *string, char *string2, char padd
       if(s1Columns > s2Columns)
         bitmap->nColumns = s1Columns;
       else bitmap->nColumns = s2Columns;
-      
+
+    
+      stringArrayRed = bitmap->dataPtr_red;
+      stringArrayGreen = bitmap->dataPtr_green;
+      stringArrayRed += bitmap->nColumns;
+      stringArrayGreen += bitmap->nColumns;
+
+/*
+      char s[64];
+      sprintf(s,"s1Cols: %d s2Cols: %d nCols: %d", s1Columns, s2Columns, bitmap->nColumns);
+      slog(s);
+  */
+    
       for(i=0;i<padding;i++) {
         *stringArrayRed = 0;
         stringArrayRed++;
