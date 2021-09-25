@@ -144,7 +144,7 @@ function showSigns() {
 	// and automatic update checklist
 
 	echo "<BR><BR><TABLE>";
-	echo "Current firmware version: " . firmware_version();
+	echo "Current firmware version: " . firmware_version() . " (" . md5_file("/home/sign-firmware/pi/www/firmware.bin",false) . ")";
 	$signList = User::getInstance()->getSigns();
 	foreach($signList as $id => $name) {
 		$ver = User::getInstance()->getSignVersion($id);
