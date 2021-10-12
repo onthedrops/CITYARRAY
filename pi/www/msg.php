@@ -46,7 +46,7 @@
 	$dbh->Query("SELECT signId, signIp, signVersion FROM signs WHERE networkId = $netId AND signRemoteId = $signIdq");
 	$dbh->next_record();
 	$signId = $dbh->f("signId");
-	$signIp = $dbh->f("sighIp");
+	$signIp = $dbh->f("signIp");
 	$signVersion = $dbh->f("signVersion");
 
 	if(!$signId) {
