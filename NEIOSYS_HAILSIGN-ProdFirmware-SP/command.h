@@ -1,0 +1,43 @@
+/*******************************************************************************
+  File Name:
+    command.h
+
+  Summary:
+  Utilities for processing bluetooth commands
+
+  Description:
+
+ *******************************************************************************/
+#ifndef _COMMAND_H
+#define _COMMAND_H
+
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "esp_https_ota.h"
+#include "global_variables.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+void processCommand(char *string);
+
+extern void sendBT(char *string);
+extern void sendlineBT(char *string);
+extern void openBT();
+extern void closeBT();
+extern void reboot();
+extern char *get_firmware_sig();
+esp_err_t do_firmware_upgrade();
+
+extern volatile char workstring[HTTP_INBUF_SIZE];
+
+
+
+#ifdef  __cplusplus
+}
+#endif
+#endif /* _COMMAND_H */
+/*******************************************************************************
+ End of File
+*/
