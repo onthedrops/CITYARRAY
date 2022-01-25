@@ -32,7 +32,7 @@ typedef struct
   char *upgradeURL;
   char *sigURL;
   int signWidth;
-  
+  char isMaster;  
 } CONFIG;
 
 CONFIG signConfig;

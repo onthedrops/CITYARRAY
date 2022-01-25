@@ -9,6 +9,7 @@
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <Wire.h>
 #include "AsyncUDP.h"
 
 #include <HTTPClient.h>
@@ -107,8 +108,13 @@ void setup()
   
   setupNVS();
   loadConfig();
-  
-  openBT();
+  signConfig.isMaster = isMaster();
+
+  if(signConfig.isMaster) {
+    Serial.println("Master");
+    openBT();
+  } 
+   
   
   
 #ifdef _XDEBUG  
@@ -117,9 +123,12 @@ void setup()
 
   for(r=0;r<SCREEN_BUFFER_COUNT;r++)
     pagestring[r][0] = '\0';
-    
-  sprintf(pagestring[7], "... V%s WAITING FOR NETWORK ...",SIGN_VERSION);
-  
+
+  if(signConfig.isMaster) {
+    sprintf(pagestring[7], "... V%s WAITING FOR NETWORK ...",SIGN_VERSION);
+  } else {
+    sprintf(pagestring[7], "... V%s WAITING FOR SLAVE ...", SIGN_VERSION);
+  }
   
 /*
    if(!SerialBT.begin("ESP32")){
@@ -174,13 +183,16 @@ void initTask(void * pvParameters) {
 
 void networkTask(void * pvParameters) {
     //disableCore0WDT();
-    WiFi.setAutoReconnect(true);
+
+    if(signConfig.isMaster) {
+      
+      WiFi.setAutoReconnect(true);
     
-  while(1) {
+      while(1) {
     //  feedLoopWDT();
-      delay(10);
+        delay(10);
         
-      switch(networkState) {
+        switch(networkState) {
         
          case 0:    if(signConfig.ssid) {
  
@@ -197,7 +209,7 @@ void networkTask(void * pvParameters) {
                       lastTime = millis();
                     }
                     break;
-         case 1:    
+          case 1:    
                     if(WiFi.status() == WL_CONNECTED) {
                         execNow = 1; // we need to connect once so remote end knows our IP address
                         networkState = 2; 
@@ -214,7 +226,7 @@ void networkTask(void * pvParameters) {
                     }
                     
                     break;     
-         case 2:  
+          case 2:  
                       
                       if (execNow == 1 || ((millis() - lastTime) > timerDelay)) {
                         if(WiFi.status() != WL_CONNECTED) {
@@ -261,8 +273,9 @@ void networkTask(void * pvParameters) {
                     networkState = 2;
 #endif
                   break;
-      } // end switch
-  } // end while 1
+        } // end switch
+      } // end while 1
+    } // end if master
 } // end task
 
 int redBrightnessOffset = 0;
@@ -496,6 +509,19 @@ char *get_firmware_sig()
     return sig;
 }
 
+char isMaster() {
+  Wire.begin();
+  Wire.beginTransmission(0x6B);
+  Wire.write(0x0A);
+  Wire.endTransmission();
+  Wire.requestFrom(0x6B,1);
+  char c = Wire.read();
+  if(c&128) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
 
 /*******************************************************************************
  End of File
