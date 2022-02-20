@@ -103,7 +103,8 @@ void setup()
   // todo : change bitmaps to pointers, created size of sign
 
   Serial.begin(115200);
-  Serial.println("Initializing");
+  
+  slog("Initializing");
   delay(500);
   
   setupNVS();
@@ -111,7 +112,7 @@ void setup()
   signConfig.isMaster = isMaster();
 
   if(signConfig.isMaster) {
-    Serial.println("Master");
+    slog("Master\n");
     openBT();
   } 
    
@@ -168,13 +169,13 @@ void setup()
 }
 
 void initTask(void * pvParameters) {
-    Serial.print("initTask starting ");
+    slog("initTask starting\n");
 
    BSP_Initialize();
   DISPLAY_Initialize();  
   BCM_Initialize();    
   vled_on();
-    Serial.print("initTask done ");
+    slog("initTask done\n");
  
 }
 
@@ -200,8 +201,7 @@ void networkTask(void * pvParameters) {
                           networkState = 2;             
                         } else {
                           WiFi.begin(signConfig.ssid, signConfig.password);
-                          Serial.print("Connecting from ");
-                          Serial.println(WiFi.macAddress());
+                          slog("Connecting from %s\n", WiFi.macAddress());
 
                           networkState = 1;
                         } 
@@ -217,7 +217,7 @@ void networkTask(void * pvParameters) {
                         udp.onPacket([](AsyncUDPPacket packet) {
                           execNow = 1;
                         });
-                        Serial.println("Connected");  
+                        slog("Connected\n");  
                     }
                     
                      if ((millis() - lastTime) > 10000) {
@@ -241,8 +241,7 @@ void networkTask(void * pvParameters) {
 //                          http.begin(signConfig.fetchHost);
                           http.begin(workbuf);
                           
-                          Serial.print("Fetching from ");
-                          Serial.println(workbuf);
+                          slog("Fetching from %s\n", workbuf);
                         
                           int httpResponseCode = http.GET();
       
@@ -322,10 +321,8 @@ void loop()
  
      if(newMessage) {
         newMessage = 0;
-        Serial.print("New message: [");
-        Serial.print((char *)workstring);
-        Serial.println("]");
-
+        slog("New message: [%s]\n", workstring);
+ 
         sprintf(outputstring, "%s", workstring);
 
            
@@ -370,9 +367,7 @@ void loop()
     } // end of scan for newline. 
            
     if(newDisplay) {
-       Serial.print("New display: [");
-        Serial.print((char *)pagestring[currentScreen]);
-        Serial.println("]");
+       slog("New display: [%s]", pagestring[currentScreen]);
  
         Clear_SBitmap2(testBitmap3);
        
@@ -390,10 +385,8 @@ void loop()
            } else {
                 *line2 = '\0';
                 line2++;
-                Serial.print("Workbuf:");
-                Serial.print(workBuf);
-                Serial.print("line2:");
-                Serial.print(line2);
+                slog("Workbuf: %s line2: %s\n", workBuf, line2);
+       
                 testBitmap3 = Write_2HString_2Bit(workBuf,line2,6);    
                 }
            } else {
@@ -450,9 +443,17 @@ void loop()
     newDisplay =1;
   }
   
-void slog(char *p)
+void slog(char *fmt, ...)
 {
-   Serial.println(p);
+  char slog_buffer[384];
+  va_list ap;
+  
+  va_start (ap, fmt);
+  vsprintf(slog_buffer, fmt, ap);
+  va_end(ap);
+
+ 
+   Serial.print(slog_buffer);
 }
 
 void sendBT(char *p)

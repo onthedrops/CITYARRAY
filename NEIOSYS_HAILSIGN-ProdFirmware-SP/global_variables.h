@@ -74,6 +74,8 @@ extern "C" {
 #define SIGN_VERSION "0.16"
 #define SCREEN_BUFFER_COUNT 8
 
+void slog(char *fmt, ...);
+
 #ifdef  __cplusplus
 }
 #endif

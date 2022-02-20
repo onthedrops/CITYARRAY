@@ -129,9 +129,6 @@ void Update_CBitmap_Window(DISPLAY_BITMAP_1BIT screenRed, DISPLAY_BITMAP_1BIT sc
 void Clear_SBitmap(DISPLAY_SBITMAP_1BIT *bitmap);
 void Clear_SBitmap2(DISPLAY_SBITMAP_2BIT *bitmap);
 
- 
-
-extern void slog(char *);
 
 
 #ifdef  __cplusplus
