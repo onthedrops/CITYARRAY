@@ -327,7 +327,7 @@ void loop()
 
            
 
-        if(strstr(outputstring,"~!UPGRADE")) {
+        if(strstr(outputstring,"~!UPGRADE2")) {
           do_firmware_upgrade();
         }
                 
