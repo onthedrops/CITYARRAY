@@ -3,8 +3,6 @@
 use FindBin;
 use IO::Socket::INET;
 use Data::Dumper;
-use RPi::Pin;
-use RPi::Const qw(:all);
 use LWP::UserAgent;
 
 $VER = "0.15";
@@ -16,6 +14,12 @@ require S2Config;
 require S2dbobj;
 
 S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
+
+my $server = 1;
+if(!S2Config::getConfigValue('server')) {
+	eval " use RPi::Pin; use RPi::Const qw(:all); ";
+	$server = 0;
+}
 
 $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
@@ -63,9 +67,11 @@ $dbh = S2dbobj::getHandle();
 $SIG{'TERM'} = sigterm;
 $SIG{'INT'} = sigterm;
 
-$main::dry_pin = RPi::Pin->new(24);
-$main::dry_pin->mode(INPUT);
-$main::dry_pin_>write(LOW);
+if(!$server) {
+	$main::dry_pin = RPi::Pin->new(24);
+	$main::dry_pin->mode(INPUT);
+	$main::dry_pin_>write(LOW);
+}
 
 $main::dry_state = 0;
 
@@ -154,19 +160,22 @@ if($exists) {
 close(UPDATE);
 
 while($main::alive) {
-	my $state = $main::dry_pin->read;
-	if($state && !$main::dry_state) {
-		slog("High detected");
-		$main::dry_state = 1;
-		# use LWP to switch to dry contact preset
-		$response = $lwp->get("http://localhost/drycontact.php?contact=1");
-		slog("R: " . $response->{'_content'});
-	} elsif(!$state && $main::dry_state) {
-		slog("Low detected");
-		$main::dry_state = 0;
-		# use LWP to switch to previous message
-		$response = $lwp->get("http://localhost/drycontact.php?contact=0");
-		slog("R: " . $response->{'_content'});
+	if(!$server) {
+
+		my $state = $main::dry_pin->read;
+		if($state && !$main::dry_state) {
+			slog("High detected");
+			$main::dry_state = 1;
+			# use LWP to switch to dry contact preset
+			$response = $lwp->get("http://localhost/drycontact.php?contact=1");
+			slog("R: " . $response->{'_content'});
+		} elsif(!$state && $main::dry_state) {
+			slog("Low detected");
+			$main::dry_state = 0;
+			# use LWP to switch to previous message
+			$response = $lwp->get("http://localhost/drycontact.php?contact=0");
+			slog("R: " . $response->{'_content'});
+		}
 	}
 
 
