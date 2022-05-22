@@ -57,10 +57,19 @@ sub getLine {
 	$self->{'buffer'} = undef;
 
 	my $done = 0;
+	my $error = 0;
+
+	my $startTime = time();
+
 
 	while(!$done) {
 		# todo: timeout handling
 		$len = sysread($self->{'btfh'}, $char, 1);
+		if($startTime - time() > 10) {
+			$done = 1;
+			$error = 1;
+		}
+
 		next if(!$len);
 		if($char eq "\n") {
 			$done = 1;
@@ -69,16 +78,48 @@ sub getLine {
 		}
 	}
 
+	$self->{'error'} = $error;
+
 	return $self->{'buffer'};
+}
+
+sub getValue {
+	my $self = shift;
+
+	return undef if($self->{'error'});
+
+	my ($v) = $self->{'buffer'} =~ /\[(.*)\]/;
+	return $v;
 }
 
 sub getVersion {
 	my $self = shift;
 	$self->putLine("V");
 	my $v = $self->getLine();
-	return $v;
+	return $self->getValue();
 }
 
+sub getConfigValue {
+	my $self = shift;
+	my $key = shift;
+
+	$self->putLine("G $key");
+	my $v = $self->getLine();
+	return undef if($v =~ /-ERR.*/);
+
+	return $self->getValue();
+}
+
+sub putConfigValue {
+	my $self = shift;
+	my $key = shift;
+	my $value = shift;
+
+	$self->putLine("S $key,$value");
+	my $v = $self->getLine();
+
+	return $self->getValue();
+}
 
 
 1;

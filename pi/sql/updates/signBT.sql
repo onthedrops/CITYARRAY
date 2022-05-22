@@ -6,6 +6,7 @@ CREATE TABLE signBluetooth (
 	firstSeen timestamp,
 	lastSeen timestamp,
 	currentlySeen tinyint,
+	seenAs varchar(64),
 	poll tinyint
 );
 
@@ -18,7 +19,15 @@ CREATE TABLE signConfigData (
 	readTime timestamp
 );
 
-	
-	
-	
+DROP TABLE IF EXISTS signConfigKeys;
+CREATE TABLE signConfigKeys (
+	signConfigKey varchar(32)
+);
 
+INSERT INTO signConfigKeys VALUES ('ssid');
+INSERT INTO signConfigKeys VALUES ('password');
+INSERT INTO signConfigKeys VALUES ('bluetoothID');
+INSERT INTO signConfigKeys VALUES ('signID');
+INSERT INTO signConfigKeys VALUES ('fetchHost');
+INSERT INTO signConfigKeys VALUES ('upgradeURL');
+INSERT INTO signConfigKeys VALUES ('sigURL');

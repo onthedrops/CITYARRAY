@@ -14,9 +14,13 @@ my $bt = new S2Bluetooth;
 $addr = 'C4:4F:33:58:B6:FB';
 $bt->Connect($addr);
 
-$v = $bt->getVersion();
+#$v = $bt->getVersion();
+#print "Version: $v\n";
 
-print "Version: $v\n";
+$v = $bt->getConfigValue('sigURL');
+print "Value: $v\n";
+print "Buffer: " . $bt->{'buffer'} . "\n";
+
 
 
 
