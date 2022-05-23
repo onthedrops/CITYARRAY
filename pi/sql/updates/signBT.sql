@@ -3,8 +3,8 @@ DROP TABLE IF EXISTS signBluetooth;
 CREATE TABLE signBluetooth (
 	signBluetoothId int not null auto_increment primary key,
 	signMac varchar(32) not null,
-	firstSeen timestamp,
 	lastSeen timestamp,
+	firstSeen timestamp,
 	currentlySeen tinyint,
 	seenAs varchar(64),
 	poll tinyint
@@ -12,11 +12,11 @@ CREATE TABLE signBluetooth (
 
 DROP TABLE IF EXISTS signConfigData;
 CREATE TABLE signConfigData (
-	signConfigDataId int not null auto_increment primary key,
 	signBluetoothId int not null,
 	signConfigKey varchar(32),
 	signConfigValue varchar(256),
-	readTime timestamp
+	readTime timestamp,
+	primary key(signBluetoothId, signConfigKey)
 );
 
 DROP TABLE IF EXISTS signConfigKeys;

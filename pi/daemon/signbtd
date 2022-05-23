@@ -107,6 +107,7 @@ while($main::alive) {
 	}
 
 	foreach $mac (keys %{$signs}) {
+		slog("did not see $mac");
 		$id = $signs->{$mac}->{'signBluetoothId'};
 		$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
 	}
@@ -114,6 +115,23 @@ while($main::alive) {
 	# scan bluetooth for signs
 	# if this is a existing sign, update the last seen and delete
 	# if this is a new sign, insert new row
+
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId  FROM signBluetooth WHERE poll = 1 AND currentlySeen = 1");
+	$sth->execute();
+	while(($mac, $signId) = $sth->fetchrow_array()) {
+		$bluetooth->Connect($mac);
+		my $sth2 = $dbh->prepare("SELECT signConfigKey FROM signConfigKeys");
+		$sth2->execute();
+		while(($key) = $sth2->fetchrow_array()) {
+			my $value = $bluetooth->getConfigValue($key);
+			my $valueq = $dbh->quote($value);
+			my $keyq = $dbh->quote($key);
+			$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
+		}
+		$bluetooth->Disconnect();
+		$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+	}
+
 
 	# scan for signs marked poll = 1
 	# load configuration variables from sign onto database, set poll = 0
