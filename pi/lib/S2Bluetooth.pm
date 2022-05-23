@@ -25,6 +25,12 @@ sub getSigns {
 	return $return_devices;
 }
 
+sub Disconnect {
+	my $self = shift;
+	$self->{'btport'}->close();
+	$self->{'btfh'} = undef;
+}
+
 sub Connect {
 	my $self = shift;
 	my $addr = shift;
