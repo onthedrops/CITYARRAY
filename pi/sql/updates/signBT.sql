@@ -21,13 +21,14 @@ CREATE TABLE signConfigData (
 
 DROP TABLE IF EXISTS signConfigKeys;
 CREATE TABLE signConfigKeys (
-	signConfigKey varchar(32)
+	signConfigKey varchar(32),
+	notes varchar(255)
 );
 
-INSERT INTO signConfigKeys VALUES ('ssid');
-INSERT INTO signConfigKeys VALUES ('password');
-INSERT INTO signConfigKeys VALUES ('bluetoothID');
-INSERT INTO signConfigKeys VALUES ('signID');
-INSERT INTO signConfigKeys VALUES ('fetchHost');
-INSERT INTO signConfigKeys VALUES ('upgradeURL');
-INSERT INTO signConfigKeys VALUES ('sigURL');
+INSERT INTO signConfigKeys VALUES ('ssid', 'wifi SSID');
+INSERT INTO signConfigKeys VALUES ('password', 'Set to ~!EMPTY if no password');
+INSERT INTO signConfigKeys VALUES ('bluetoothID','ID sign should appear as. Should begin with SIGN-');
+INSERT INTO signConfigKeys VALUES ('signID', 'Integer sign ID. Not used');
+INSERT INTO signConfigKeys VALUES ('fetchHost', 'URL to fetch content from, including query string');
+INSERT INTO signConfigKeys VALUES ('upgradeURL', 'URL to fetch upgrade binary from');
+INSERT INTO signConfigKeys VALUES ('sigURL', 'URL to fetch signature for upgrade from');
