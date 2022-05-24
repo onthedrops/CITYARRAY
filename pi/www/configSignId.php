@@ -9,9 +9,20 @@
 
 	$btsign = new BTSign();
 
+
 	if($_POST['P']) {
-		echo "Save not implemented yet";
-		die;
+		$delta = 0;
+		$fields = $btsign->getFields();
+		foreach ($fields as $key => $notes) {
+			$delta += $btsign->setData($signId,$key, $_POST[$key]);
+		}
+
+		if($delta) {
+			$ok = $btsign->push($signId);
+			if(!$ok) {
+				echo "<FONT COLOR=Red>Error - was unable to save data to the sign insice the timeout window.";
+			}
+		}
 	}
 
 	$ok = $btsign->poll($signId);
@@ -25,6 +36,7 @@
 ?>
 <FORM METHOD=POST>
 <INPUT TYPE=HIDDEN NAME=P VALUE=1>
+<INPUT TYPE=HIDDEN NAME=signId VALUE=<?php echo $signId ?>>
 
 <TABLE>
 <?php

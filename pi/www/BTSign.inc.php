@@ -36,11 +36,33 @@ class BTSign {
 
 	public function setData($signId, $key, $value)
 	{
+		$keyq = $this->dbh->equote($key);
+		$valueq = $this->dbh->equote($value);
 
+		$this->dbh->Query("SELECT COUNT(*) AS cnt FROM signConfigData WHERE signBluetoothId = $signId AND signConfigKey = $keyq AND signConfigValue = $valueq");
+		$this->dbh->next_record();
+
+		if($this->dbh->f("cnt") == 1) {
+			return 0;
+		}
+
+		$this->dbh->Query("REPLACE INTO signConfigData SET signBluetoothId = $signId, signConfigKey = $keyq, signCOnfigValue = $valueq, dirty = 1");
+		return 1;
 	}
 
 	public function push($signId)
 	{
+		$this->dbh->Query("UPDATE signBluetooth set poll = 2 WHERE signBluetoothId = $signId");
+		$count = 0;
+
+		while(1) {
+			$pollValue = $this->dbh->selectOne("SELECT poll FROM signBluetooth WHERE signBluetoothId = $signId");
+			if($pollValue == 0) 
+				return 1;
+			if($count++ > 30)
+				return 0;
+			sleep(1);
+		}
 
 	}
 

@@ -16,6 +16,7 @@ CREATE TABLE signConfigData (
 	signConfigKey varchar(32),
 	signConfigValue varchar(256),
 	readTime timestamp,
+	dirty tinyint,
 	primary key(signBluetoothId, signConfigKey)
 );
 

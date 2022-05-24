@@ -19,6 +19,8 @@ sub getSigns {
 	foreach $addr (keys %{$devices}) {
 		if($devices->{$addr} =~ /SIGN.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
+		} elsif($addr =~ /C4:4F.*/) {
+			$return_devices->{$addr} = $devices->{$addr};
 		}
 	}
 	
@@ -27,6 +29,7 @@ sub getSigns {
 
 sub Disconnect {
 	my $self = shift;
+	close($self->{'btfh'});
 	$self->{'btport'}->close();
 	$self->{'btfh'} = undef;
 }
@@ -54,6 +57,7 @@ sub putLine {
 	my $cmd = shift;
 	my $fh = $self->{'btfh'};
 
+	print "Sending $cmd\n" if($main::debug);
 
 	print $fh "$cmd\n";
 }
@@ -123,6 +127,7 @@ sub putConfigValue {
 
 	$self->putLine("S $key,$value");
 	my $v = $self->getLine();
+	print $v . "\n" if($main::debug);
 
 	return $self->getValue();
 }
