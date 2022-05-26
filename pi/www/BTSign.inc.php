@@ -86,7 +86,7 @@ class BTSign {
 	{
 		// returns a array listing all signs that can be currently seen
 
-		$this->dbh->Query("SELECT signBluetoothId, signMac, seenAs FROM signBluetooth");
+		$this->dbh->Query("SELECT signBluetoothId, signMac, seenAs FROM signBluetooth WHERE currentlySeen =1");
 		$ret = array();
 
 		while($this->dbh->next_record()) {
