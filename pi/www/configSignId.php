@@ -29,7 +29,10 @@
 
 	if(!$ok) {
 		echo "<FONT COLOR=Red>Error - was unable to poll the sign insice the timeout window. Shift-reload to retry";
+	} else {
+		echo "<FONT COLOR=Green>OK - sign data loaded successfully";
 	}
+
 
 	$fields = $btsign->getFields();
 	$data = $btsign->getData($signId);
