@@ -21,6 +21,8 @@
 			$ok = $btsign->push($signId);
 			if(!$ok) {
 				echo "<FONT COLOR=Red>Error - was unable to save data to the sign insice the timeout window.";
+			} else {
+				echo "<FONT COLOR=Green>OK - sign data loaded successfully<BR>";
 			}
 		}
 	}
@@ -29,9 +31,7 @@
 
 	if(!$ok) {
 		echo "<FONT COLOR=Red>Error - was unable to poll the sign insice the timeout window. Shift-reload to retry";
-	} else {
-		echo "<FONT COLOR=Green>OK - sign data loaded successfully";
-	}
+	} 
 
 
 	$fields = $btsign->getFields();
