@@ -24,11 +24,6 @@ close(PID);
 
 $dbh = S2dbobj::getHandle();
 
-$SIG{'TERM'} = sigterm;
-$SIG{'INT'} = sigterm;
-
-system(S2Config::getHomedir() . '/daemon/signbtd');
-
 $lwp = new LWP::UserAgent;
 
 $signIpCache = {};
