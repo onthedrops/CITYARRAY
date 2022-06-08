@@ -109,9 +109,13 @@
 					$continue = 0;
 				} 
 
-				if($count++ == 3000) {
+				if($count++ == 300) {
 					header($_SERVER['SERVER_PROTOCOL'] . ' 204 no new content', true, 204);
 					exit(0);
+				}
+
+				if(connection_status() != 0) {      // Client aborted/disconnected abruptly
+					exit(0);	
 				}
 				
 				usleep(100000);
