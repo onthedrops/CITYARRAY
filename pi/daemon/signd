@@ -3,8 +3,6 @@
 use FindBin;
 use IO::Socket::INET;
 use Data::Dumper;
-use RPi::Pin;
-use RPi::Const qw(:all);
 use LWP::UserAgent;
 
 $VER = "0.15";
@@ -16,6 +14,9 @@ require S2Config;
 require S2dbobj;
 
 S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
+
+use RPi::Pin; 
+use RPi::Const qw(:all);
 
 $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
@@ -58,10 +59,13 @@ open(PID,">$pidFile");
 print PID "$$\n";
 close(PID);
 
+
 $dbh = S2dbobj::getHandle();
 
 $SIG{'TERM'} = sigterm;
 $SIG{'INT'} = sigterm;
+
+system(S2Config::getHomedir() . '/daemon/signbtd');
 
 $main::dry_pin = RPi::Pin->new(24);
 $main::dry_pin->mode(INPUT);
@@ -168,7 +172,6 @@ while($main::alive) {
 		$response = $lwp->get("http://localhost/drycontact.php?contact=0");
 		slog("R: " . $response->{'_content'});
 	}
-
 
 	if(!($tickCounter++ % 10)) {
 		$cmd = S2Config::getConfigValue('gitcmd');

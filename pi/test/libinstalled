@@ -1,0 +1,9 @@
+#!/usr/bin/perl
+
+$r = system("dpkg -l foo > /dev/null");
+
+print "r: $r\n";
+
+$r = system("dpkg -l libnet-bluetooth-perl > /dev/null");
+
+print "r2: $r\n";

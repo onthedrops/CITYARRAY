@@ -79,6 +79,49 @@
 
 	// step 3 - find messageId for sign
 
+	$seqMode = 0;
+
+	if(isset($_REQUEST['seq'])) {
+		// specialized sleep version
+		// enable seq mode
+
+		$seqMode = 1;
+		// step 1: if seq is <= our last seen seq,
+		// fall through immediately
+		$dbh->Query("SELECT sequenceId, messageId FROM signSequence WHERE signId = $signId");
+		$dbh->next_record();
+
+		$lastSeenSequence = $dbh->f("sequenceId");
+		$lastSeenMessage = $dbh->f("messageId");
+			
+		if($lastSeenSequence == null || ($_REQUEST['seq'] > $lastSeenSequence)) {
+
+			// check to see if messageId is different than last
+			// transmitted message
+			$continue = 1;
+			$count = 0;
+
+			while($continue) {
+
+				$currentMessage = $dbh->selectOne("SELECT messageId FROM signMessage WHERE signId = $signId");
+
+				if($lastSeenMessage == null || $lastSeenMessage != $currentMessage) {
+					$continue = 0;
+				} 
+
+				if($count++ == 150) {
+					header($_SERVER['SERVER_PROTOCOL'] . ' 204 no new content', true, 204);
+					exit(0);
+				}
+				
+				usleep(200000);
+			}
+
+		}
+
+	}
+
+	
 	$dbh->Query("SELECT messageId, firstShownDate FROM signMessage WHERE signId = $signId");
 	$dbh->next_record();
 	if(!$dbh->f("messageId")) {
@@ -95,6 +138,12 @@
 	}	
 	
 	$dbh->Query("UPDATE signMessage SET lastShownDate=NOW() $additionalSQL");
+
+
+	if($seqMode) {
+		$seq = intval($_REQUEST['seq']);
+		$dbh->Query($sql = "REPLACE INTO signSequence SET sequenceId=$seq, messageId=$messageId,signId = $signId");
+	} 
 
 	$message = $dbh->selectOne("SELECT message FROM messages WHERE messageId = $messageId");
 	echo $message;
