@@ -184,6 +184,7 @@ void initTask(void * pvParameters) {
 
 void networkTask(void * pvParameters) {
     //disableCore0WDT();
+    HTTPClient http;
 
     if(signConfig.isMaster) {
       
@@ -235,12 +236,11 @@ void networkTask(void * pvParameters) {
                           if(signConfig.fetchHost) {
                           char workbuf[256];
                         
-                          HTTPClient http;
                           sprintf(workbuf, "%s&ver=%s&seq=%d", signConfig.fetchHost, SIGN_VERSION, signConfig.seq);
 
 //                          http.begin(signConfig.fetchHost);
                           http.begin(workbuf);
-                          
+                          http.setTimeout(31000);
                           slog("Fetching from %s\n", workbuf);
                         
                           int httpResponseCode = http.GET();
