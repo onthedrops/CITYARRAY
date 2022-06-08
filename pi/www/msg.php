@@ -109,12 +109,12 @@
 					$continue = 0;
 				} 
 
-				if($count++ == 1500) {
+				if($count++ == 3000) {
 					header($_SERVER['SERVER_PROTOCOL'] . ' 204 no new content', true, 204);
 					exit(0);
 				}
 				
-				usleep(200000);
+				usleep(100000);
 			}
 
 		}
