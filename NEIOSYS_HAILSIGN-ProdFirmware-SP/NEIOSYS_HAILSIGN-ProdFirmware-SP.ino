@@ -236,7 +236,7 @@ void networkTask(void * pvParameters) {
                           char workbuf[256];
                         
                           HTTPClient http;
-                          sprintf(workbuf, "%s&ver=%s", signConfig.fetchHost, SIGN_VERSION);
+                          sprintf(workbuf, "%s&ver=%s&seq=%d", signConfig.fetchHost, SIGN_VERSION, signConfig.seq);
 
 //                          http.begin(signConfig.fetchHost);
                           http.begin(workbuf);
@@ -244,9 +244,13 @@ void networkTask(void * pvParameters) {
                           slog("Fetching from %s\n", workbuf);
                         
                           int httpResponseCode = http.GET();
-      
-                          if (httpResponseCode>0) {
+
+                          if(httpResponseCode == 204) {
+                            // do not incrmeent seq
+                          } else if (httpResponseCode == 200) {
                             String payload = http.getString();
+                            // increment seq
+                            signConfig.seq++;
 
                             if(payload.length() < HTTP_INBUF_SIZE) {
                               payload.toCharArray((char *)workstring,payload.length()+1);

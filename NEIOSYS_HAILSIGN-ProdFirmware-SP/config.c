@@ -80,7 +80,7 @@ void loadConfig()
 #ifdef _XDEBUG
   slog("Read first key");
 #endif
-  
+  signConfig.seq = 0;
   signConfig.password = getConfigKey("password");
 
   if(signConfig.password && !strcmp(signConfig.password, "~!EMPTY")) {
