@@ -70,7 +70,7 @@ uint8_t gBrightness = 0x0F;
 uint8_t rBrightness = 0x0F;
 
 unsigned long lastTime = 0;
-unsigned long timerDelay = 120000;
+unsigned long timerDelay = 10;
 
 BluetoothSerial SerialBT;
 AsyncUDP udp;
