@@ -1,0 +1,106 @@
+#!/usr/bin/perl
+
+use FindBin;
+use IO::Socket::INET;
+use Data::Dumper;
+use LWP::UserAgent;
+
+push(@INC, $FindBin::Bin . "/../lib");
+
+require S2Config;
+require S2dbobj;
+
+S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
+
+$home = S2Config::getHomedir();
+$logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
+
+$pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signd.pid';
+
+open(PID,">$pidFile");
+print PID "$$\n";
+close(PID);
+
+
+$dbh = S2dbobj::getHandle();
+
+$SIG{'TERM'} = sigterm;
+$SIG{'INT'} = sigterm;
+
+system(S2Config::getHomedir() . '/daemon/signbtd');
+
+$lwp = new LWP::UserAgent;
+
+$signIpCache = {};
+
+$tickCounter = 0;
+
+$sendQueue = {};
+
+# check to see if sqlUpdates table exists
+# if not, add it
+($exists) = $dbh->selectrow_array("SHOW TABLES LIKE 'sqlUpdates'");
+if(!$exists) {
+	$sql=<<EOF;
+	CREATE TABLE sqlUpdates (
+		sqlUpdateId int not null auto_increment primary key,
+		filename varchar(255),
+		loadTime timestamp
+	);
+EOF
+
+	if(!$dbh->do($sql)) {
+		print $DBI::errstr . "\n" . $sql . "\n" if($debug);
+	} else {
+		$exists = 1;	
+	}
+}
+
+open(UPDATE,">>/var/log/update.log");
+
+if($exists) {
+
+	# iterate the directory vs the table, run all updates
+	my $updatepath = '/home/sign-firmware/pi/sql/updates';
+
+
+	opendir(DH,$updatepath);
+	while($file = readdir(DH)) {
+		$fullpath = $updatepath . '/' . $file;
+		
+		if(-f $fullpath && $file =~ /.*\.sql$/) {
+			print "Reading $fullpath" if($debug);
+	#		print UPDATE "Reading $fullpath\n";
+
+			$fileq = $dbh->quote($file);
+			($already_installed) = $dbh->selectrow_array("SELECT filename FROM sqlUpdates WHERE filename = $fileq");
+			if(!$already_installed) {
+				open(F,"<$fullpath");
+				$buf = undef;
+				while($in = <F>) {
+					$buf .= $in;
+					if($in =~ /.*;.*/) {
+						if(!$dbh->do($buf)) {
+							print "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n" if($debug);
+							print UPDATE "$file error loading: " . $DBI::errstr . "\n" . $sql . "\n";
+						} else {
+							print UPDATE "$file error loaded\n" . $sql . "\n";
+							$sql = "INSERT INTO sqlUpdates SET filename=$fileq, loadTime=NOW()";
+							$dbh->do($sql);
+						}
+
+						$buf = undef;
+					}
+				}
+				close(F);
+			}
+		}
+	}
+	closedir(DH);
+
+} else {
+	print UPDATE "No sql update table detected so updates not run\n";
+}
+
+close(UPDATE);
+

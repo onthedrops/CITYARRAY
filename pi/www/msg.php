@@ -109,7 +109,7 @@
 					$continue = 0;
 				} 
 
-				if($count++ == 150) {
+				if($count++ == 1500) {
 					header($_SERVER['SERVER_PROTOCOL'] . ' 204 no new content', true, 204);
 					exit(0);
 				}
