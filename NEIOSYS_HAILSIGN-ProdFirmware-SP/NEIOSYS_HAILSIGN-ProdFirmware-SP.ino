@@ -307,7 +307,8 @@ void loop()
 //For testing purpose only
 //---------------------------------------------
   softDelay++; 
-  if (softDelay >= 50000 && BCM_OK()) 
+//  if (softDelay >= 50000 && BCM_OK()) 
+  if(softDelay >= signConfig.scrollSpeed && BCM_OK())
   {
 
     if(SerialBT.available()) {
@@ -341,6 +342,20 @@ void loop()
           scrollVal = 1;
         }
 
+        if(strstr(outputstring, "~!1")) {
+          signConfig.scrollSpeed = 10000;
+        } else if(strstr(outputstring, "~!2")) {
+          signConfig.scrollSpeed = 25000;
+        } else if(strstr(outputstring, "~!3")) {
+          signConfig.scrollSpeed = 35000;
+        } else if(strstr(outputstring, "~!4")) {
+          signConfig.scrollSpeed = 50000;
+        } else if(strstr(outputstring, "~!5")) {
+          signConfig.scrollSpeed = 65000;
+        } else if(strstr(outputstring, "~!6")) {
+          signConfig.scrollSpeed = 75000;
+        }
+        
         // split output string into pages
         // ~!P is page command
         char p = 0;

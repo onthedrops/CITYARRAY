@@ -71,7 +71,7 @@ void loadConfig()
 {
   // first, get the bluetooth ID key. If it doesn't exist, create one
   int signId = 0;
-
+  signConfig.scrollSpeed = 50000;
 #ifdef _XDEBUG
   slog("loading configuration");
 #endif

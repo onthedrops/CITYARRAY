@@ -33,7 +33,8 @@ typedef struct
   char *sigURL;
   int signWidth;
   char isMaster; 
-  int seq; 
+  int seq;
+  unsigned int scrollSpeed; 
 } CONFIG;
 
 CONFIG signConfig;
