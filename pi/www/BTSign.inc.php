@@ -34,6 +34,19 @@ class BTSign {
 		return $a;
 	}
 
+	public function getDebugData($signId)
+	{
+		$this->dbh->Query("SELECT signConfigKey, signConfigValue FROM signConfigData WHERE signBluetoothId = $signId");
+		$a = array();
+
+		while($this->dbh->next_record()) {
+			$a[$this->dbh->f("signConfigKey")] = $this->dbh->f("signConfigValue");
+		}
+			
+		return $a;
+
+	}
+
 	public function setData($signId, $key, $value)
 	{
 		$keyq = $this->dbh->equote($key);
@@ -73,6 +86,8 @@ class BTSign {
 
 		while(1) {
 			$pollValue = $this->dbh->selectOne("SELECT poll FROM signBluetooth WHERE signBluetoothId = $signId");
+			if($pollValue == -1)
+				return 0;
 			if($pollValue == 0) 
 				return 1;
 			if($count++ > 30)
@@ -81,6 +96,21 @@ class BTSign {
 		}
 	}
 
+	public function debugpoll($signId)
+	{
+		$this->dbh->Query("UPDATE signBluetooth set poll = 5 WHERE signBluetoothId = $signId");
+		$count = 0;
+		while(1) {
+			$pollValue = $this->dbh->selectOne("SELECT poll FROM signBluetooth WHERE signBluetoothId = $signId");
+			if($pollValue == -1)
+				return 0;
+			if($pollValue == 0) 
+				return 1;
+			if($count++ > 30)
+				return 0;
+			sleep(1);
+		}
+	}
 
 	public function getSigns()
 	{

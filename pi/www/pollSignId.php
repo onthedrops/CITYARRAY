@@ -9,27 +9,7 @@
 
 	$btsign = new BTSign();
 
-
-	if($_POST['P']) {
-		$delta = 0;
-		$fields = $btsign->getFields();
-		foreach ($fields as $key => $notes) {
-			$delta += $btsign->setData($signId,$key, $_POST[$key]);
-		}
-			
-		$btsign->setData($signId, 'reboot', $_POST['reboot']);
-
-		if($delta) {
-			$ok = $btsign->push($signId);
-			if(!$ok) {
-				echo "<FONT COLOR=Red>Error - was unable to save data to the sign insice the timeout window.";
-			} else {
-				echo "<FONT COLOR=Green>OK - sign data loaded successfully<BR>";
-			}
-		}
-	}
-
-	$ok = $btsign->poll($signId);
+	$ok = $btsign->debugpoll($signId);
 
 	if(!$ok) {
 		echo "<FONT COLOR=Red>Error - was unable to poll the sign insice the timeout window. Shift-reload to retry";
@@ -37,23 +17,22 @@
 
 
 	$fields = $btsign->getFields();
-	$data = $btsign->getData($signId);
+	$data = $btsign->getDebugData($signId);
 ?>
 <FORM METHOD=POST>
 <INPUT TYPE=HIDDEN NAME=P VALUE=1>
 <INPUT TYPE=HIDDEN NAME=signId VALUE=<?php echo $signId ?>>
 
+<TEXTAREA ROWS=10 COLS=60><?php echo $data['debug']; ?></TEXTAREA><BR>
 <TABLE>
 <?php
+
 	foreach ($fields as $field => $notes) {
 		echo "<TR><TD>$field ($notes)</TD></TR>";
 		echo "<TR><TD><INPUT NAME=$field SIZE=128 VALUE=\"" . $data[$field] . "\"></TD></TR>";
 	}
-
-	echo "<TR><TD>Reboot after programming?<INPUT TYPE=Checkbox NAME=reboot VALUE=1/></TD><TD></TD></TR>";
 ?>
 </TABLE>
-<INPUT TYPE=Submit>
 </FORM>
 
 	

@@ -8,6 +8,7 @@ use Fcntl;
 sub new {
 	my $self = {};
 	my $type = shift;
+	$self->{'password'} = 'xyzzy';
 	bless($self, $type);
 }
 
@@ -49,7 +50,23 @@ sub Connect {
 	my $flags = fcntl($self->{'btfh'}, F_GETFL, 0);
 	fcntl($self->{'btfh'}, F_SETFL, $flags | O_NONBLOCK);
 	sleep(1);
+	return 1;
+}
 
+sub reboot {
+	my $self = shift;
+
+	my $fh = $self->{'btfh'};
+
+	print $fh "R " . $self->{'password'} . "\n";
+}
+
+sub programmingMode {
+	my $self = shift;
+	
+	my $fh = $self->{'btfh'};
+	print $fh "p " . $self->{'password'} . "\n";
+	sleep(1);
 }
 
 sub putLine {
@@ -57,10 +74,34 @@ sub putLine {
 	my $cmd = shift;
 	my $fh = $self->{'btfh'};
 
+	if(!$fh) {
+		return 0;
+	}
+
 	print "Sending $cmd\n" if($main::debug);
 
 	print $fh "$cmd\n";
 }
+
+sub getInfo {
+	my $self = shift;
+	my $buf = "";
+
+	$self->putLine("?");
+
+	for(my $i=0;$i<100;$i++) {
+		my $data = $self->getLine();
+		#print "$i [$data]\n";
+		$data =~ s/\r//g;
+		$data =~ s/\n//g;
+		$buf .= $data . "\n";
+			
+		return($buf) if($data eq "EOF");
+	}
+
+	return "$buf<<\n";
+}
+
 
 sub getLine {
 	my $self = shift;
