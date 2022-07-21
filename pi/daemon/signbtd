@@ -123,40 +123,46 @@ while($main::alive) {
 	$sth->execute();
 	while(($mac, $signId) = $sth->fetchrow_array()) {
 		slog("Reading data from sign $mac");
-		$bluetooth->Connect($mac);
-		my $sth2 = $dbh->prepare("SELECT signConfigKey FROM signConfigKeys");
-		$sth2->execute();
-		while(($key) = $sth2->fetchrow_array()) {
-			my $value = $bluetooth->getConfigValue($key);
-			my $valueq = $dbh->quote($value);
-			my $keyq = $dbh->quote($key);
-			$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
-		}
-		$bluetooth->Disconnect();
-		$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
-	}
-
-	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId FROM signBluetooth WHERE poll = 2 AND currentlySeen = 1");
-	$sth->execute();
-	while(($mac, $signId) = $sth->fetchrow_array()) {
-		slog("Writing data to sign $mac");
-
-		$bluetooth->Connect($mac);
-
-		my $sth2 = $dbh->prepare("SELECT signBluetoothId, signConfigKey, signConfigValue FROM signConfigData WHERE signBluetoothId = $signId AND dirty = 1");
-		$sth2->execute();
-
-		while(($signId2, $configKey, $configValue) = $sth2->fetchrow_array()) {
-			$bluetooth->putConfigValue($configKey, $configValue);
-			slog("Setting $signId $configKey to $configValue");
-
-			$configKeyq = $dbh->quote($configKey);
-			$dbh->do("UPDATE signConfigData SET dirty = 0 WHERE signBluetoothId = $signId AND signConfigKey = $configKeyq");
-
+		if(!$bluetooth->Connect($mac)) {
+			slog("failed to connect to $mac");
+			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
+		} else {
+		
+			my $sth2 = $dbh->prepare("SELECT signConfigKey FROM signConfigKeys");
+			$sth2->execute();
+			while(($key) = $sth2->fetchrow_array()) {
+				my $value = $bluetooth->getConfigValue($key);
+				my $valueq = $dbh->quote($value);
+				my $keyq = $dbh->quote($key);
+				$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
+			}
+			$bluetooth->Disconnect();
+			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
 		}
 
-		$bluetooth->Disconnect();
-		$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+		my $sth = $dbh->prepare("SELECT signMac, signBluetoothId FROM signBluetooth WHERE poll = 2 AND currentlySeen = 1");
+		$sth->execute();
+		while(($mac, $signId) = $sth->fetchrow_array()) {
+			slog("Writing data to sign $mac");
+
+			$bluetooth->Connect($mac);
+			$bluetooth->ProgrammingMode();
+
+			my $sth2 = $dbh->prepare("SELECT signBluetoothId, signConfigKey, signConfigValue FROM signConfigData WHERE signBluetoothId = $signId AND dirty = 1");
+			$sth2->execute();
+
+			while(($signId2, $configKey, $configValue) = $sth2->fetchrow_array()) {
+				$bluetooth->putConfigValue($configKey, $configValue);
+				slog("Setting $signId $configKey to $configValue");
+
+				$configKeyq = $dbh->quote($configKey);
+				$dbh->do("UPDATE signConfigData SET dirty = 0 WHERE signBluetoothId = $signId AND signConfigKey = $configKeyq");
+
+			}
+
+			$bluetooth->Disconnect();
+			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+		}
 	}
 
 
