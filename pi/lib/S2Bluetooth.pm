@@ -83,6 +83,26 @@ sub putLine {
 	print $fh "$cmd\n";
 }
 
+sub getInfo {
+	my $self = shift;
+	my $buf = "";
+
+	$self->putLine("?");
+
+	for(my $i=0;$i<100;$i++) {
+		my $data = $self->getLine();
+		#print "$i [$data]\n";
+		$data =~ s/\r//g;
+		$data =~ s/\n//g;
+		$buf .= $data . "\n";
+			
+		return($buf) if($data eq "EOF");
+	}
+
+	return "$buf<<\n";
+}
+
+
 sub getLine {
 	my $self = shift;
 	$self->{'buffer'} = undef;
