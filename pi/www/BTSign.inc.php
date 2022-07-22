@@ -79,7 +79,7 @@ class BTSign {
 
 	}
 
-	public function poll($signId, $pollValue=1)
+	public function poll($signId, $pollValue=1, $timeout=30)
 	{
 		$this->dbh->Query("UPDATE signBluetooth set poll = $pollValue WHERE signBluetoothId = $signId");
 		$count = 0;
@@ -90,7 +90,7 @@ class BTSign {
 				return 0;
 			if($pollValue == 0) 
 				return 1;
-			if($count++ > 30)
+			if($count++ > $timeout)
 				return 0;
 			sleep(1);
 		}
@@ -98,7 +98,7 @@ class BTSign {
 
 	public function debugpoll($signId)
 	{
-		return $this->poll($signId, 5);
+		return $this->poll($signId, 5, 60);
 	}
 
 	public function reboot($signId)

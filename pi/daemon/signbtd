@@ -65,18 +65,30 @@ open(PID,">$pidFile");
 print PID "$$\n";
 close(PID);
 
-
-$dbh = S2dbobj::getHandle();
-
+$main::alive = 1;
 $SIG{'TERM'} = sigterm;
 $SIG{'INT'} = sigterm;
 
+# either way we fork the bluetooth scanning thread
+if(fork()) {
+	# parent, do nothing
+} else {
+	# child
+	while($main::alive) {
+		btscan();
+		sleep(1);
+	}
+	exit(0);
+}
+
+$dbh = S2dbobj::getHandle();
 my $bluetooth = new S2Bluetooth;
 
-$main::alive = 1;
+$tick = 0;
 
 while($main::alive) {
 	#load existing signs into memory
+	slog("main loop " . $tick++) if($main::debug & 2);
 	my $sth = $dbh->prepare("SELECT * FROM signBluetooth");
 
 	$sth->execute();
@@ -86,38 +98,9 @@ while($main::alive) {
 		$signs->{$signMac} = $x;
 	}
 
-	if(!(time() % 30)) {
-		slog("Scanning");
+	select(undef,undef,undef,0.25);
 
-		my $btscan = $bluetooth->getSigns();
-	
-		foreach $mac (keys %{$btscan}) {
-			slog("btscan found $mac");
-	
-			$name = $btscan->{$mac};
-			$nameq = $dbh->quote($name);
-
-			if($signs->{$mac}) {
-				$id = $signs->{$mac}->{'signBluetoothId'};
-				$dbh->do("UPDATE signBluetooth SET currentlySeen=1, lastSeen=NOW(), seenAs = $nameq WHERE signBluetoothId = $id");
-				delete $signs->{$mac};
-			} else {
-				$macq = $dbh->quote($mac);
-
-				$dbh->do("INSERT INTO signBluetooth SET signMac = $macq, firstSeen=NOW(), lastSeen=NOW(), currentlySeen=1, seenAs = $nameq");
-				($signId) = $dbh->selectrow_array("SELECT LAST_INSERT_ID()");
-			}
-		}
-
-		foreach $mac (keys %{$signs}) {
-			slog("did not see $mac");
-			$id = $signs->{$mac}->{'signBluetoothId'};
-			$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
-		}
-		
-	} else {
-		select(undef,undef,undef,0.25);
-	}
+	my $dbh = S2dbobj::getHandle();
 
 	# scan bluetooth for signs
 	# if this is a existing sign, update the last seen and delete
@@ -139,6 +122,7 @@ while($main::alive) {
 				$bluetooth->message("IDENT");
 			}
 			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+			$bluetooth->Disconnect();
 		}
 	}
 
@@ -159,6 +143,7 @@ while($main::alive) {
 
 			$bluetooth->Disconnect();
 			sleep(1);
+#			select(undef,undef,undef,0.1);
 			$dbh->do("UPDATE signBluetooth set poll = 1 WHERE signBluetoothId = $signId");
 		}
 	}
@@ -256,5 +241,48 @@ sub slog {
 sub getTimestamp {
 	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
         return sprintf("%02d/%02d/%04d-%02d:%02d:%02d",$mon+1,$mday,$year+1900,$hour,$min,$sec);
+}
+
+sub btscan {
+	my $dbh = S2dbobj::getHandle();
+	my $bluetooth = new S2Bluetooth();
+	
+	slog("Scanning");
+
+	my $sth = $dbh->prepare("SELECT * FROM signBluetooth");
+
+	$sth->execute();
+	my ($signMac, $signs);
+
+	while(my $x = $sth->fetchrow_hashref()) {
+		$signMac = $x->{'signMac'};
+		$signs->{$signMac} = $x;
+	}
+
+	my $btscan = $bluetooth->getSigns();
+	
+	foreach my $mac (keys %{$btscan}) {
+		slog("btscan found $mac");
+
+		my $name = $btscan->{$mac};
+		my $nameq = $dbh->quote($name);
+
+		if($signs->{$mac}) {
+			$id = $signs->{$mac}->{'signBluetoothId'};
+			$dbh->do("UPDATE signBluetooth SET currentlySeen=1, lastSeen=NOW(), seenAs = $nameq WHERE signBluetoothId = $id");
+			delete $signs->{$mac};
+		} else {
+			$macq = $dbh->quote($mac);
+
+			$dbh->do("INSERT INTO signBluetooth SET signMac = $macq, firstSeen=NOW(), lastSeen=NOW(), currentlySeen=1, seenAs = $nameq");
+			($signId) = $dbh->selectrow_array("SELECT LAST_INSERT_ID()");
+		}
+
+		foreach $mac (keys %{$signs}) {
+			slog("did not see $mac");
+			$id = $signs->{$mac}->{'signBluetoothId'};
+			$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
+		}
+	}
 }
 
