@@ -11,6 +11,8 @@
 #include <WiFiUdp.h>
 #include <Wire.h>
 #include "AsyncUDP.h"
+#include <esp_wifi.h>
+
 
 #include <HTTPClient.h>
 #include <string.h>
@@ -199,6 +201,7 @@ void networkTask(void * pvParameters) {
          case 0:    if(signConfig.ssid) {
  
                        if(WiFi.status() == WL_CONNECTED) {
+                          slog("Already connected, jumping to 2");
                           networkState = 2;             
                         } else {
                           WiFi.begin(signConfig.ssid, signConfig.password);
@@ -275,6 +278,11 @@ void networkTask(void * pvParameters) {
                     SerialBT.begin(signConfig.bluetoothID);   
                     networkState = 2;
 #endif
+                  break;
+            case 4:
+                    networkState = 5;
+                  break;
+            case 5:
                   break;
         } // end switch
       } // end while 1
