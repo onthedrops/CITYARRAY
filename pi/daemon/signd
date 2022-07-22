@@ -178,6 +178,14 @@ while($main::alive) {
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
 
+		if($shutdown == 6) {
+				slog("Programming requested");
+
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+				$result = system("/home/sign-firmware/pi/daemon/program-sign &");
+				slog("Result of program-sign: $result");
+		}
+				
 		if($shutdown == 5) {
 				slog("Remote connection requested");
 				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
