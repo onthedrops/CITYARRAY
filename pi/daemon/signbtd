@@ -65,6 +65,9 @@ open(PID,">$pidFile");
 print PID "$$\n";
 close(PID);
 
+unlink($main::logFile) if(!S2Config::getConfigValue('retain'));
+
+
 $main::alive = 1;
 $SIG{'TERM'} = sigterm;
 $SIG{'INT'} = sigterm;
