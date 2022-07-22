@@ -49,7 +49,8 @@ sub Connect {
 	$self->{'btfh'}->autoflush(1);
 	my $flags = fcntl($self->{'btfh'}, F_GETFL, 0);
 	fcntl($self->{'btfh'}, F_SETFL, $flags | O_NONBLOCK);
-	sleep(1);
+#	sleep(1);
+	select(undef,undef,undef,0.5);
 	return 1;
 }
 
@@ -61,12 +62,22 @@ sub reboot {
 	print $fh "R " . $self->{'password'} . "\n";
 }
 
+sub message {
+	my $self = shift;
+	my $msg = shift;
+	my $fh = $self->{'btfh'};
+
+	print $fh "M " . $msg . "\n";
+}
+
+	
+
 sub programmingMode {
 	my $self = shift;
 	
 	my $fh = $self->{'btfh'};
 	print $fh "p " . $self->{'password'} . "\n";
-	sleep(1);
+#	sleep(1);
 }
 
 sub putLine {

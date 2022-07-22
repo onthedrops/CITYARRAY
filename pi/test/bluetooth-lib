@@ -18,11 +18,13 @@ $bt->Connect($addr);
 #$v = $bt->getVersion();
 #print "Version: $v\n";
 
-$v = $bt->getConfigValue('fetchHost');
+#$v = $bt->getConfigValue('fetchHost');
+print "GetInfo\n";
+$v = $bt->getInfo();
 print "Value: $v\n";
 print "Buffer: " . $bt->{'buffer'} . "\n";
 
-$bt->programmingMode();
+#$bt->programmingMode();
 
 
 

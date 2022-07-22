@@ -15,7 +15,7 @@
 
 <FORM METHOD=POST ACTION=pollSignId.php>
 <TABLE><TR><TD>
-Configure sign:
+Debug sign:
 </TD><TD>
 	<SELECT ID=signId NAME=signId>
 <?php
