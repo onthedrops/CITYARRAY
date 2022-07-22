@@ -197,7 +197,6 @@ void command_upgrade(char *string) {
     sendlineBT("+OK commanding firmware update");
     networkState = 3;    
 #else    
-   
     do_firmware_upgrade();
     openBT();
 #endif    
@@ -223,7 +222,7 @@ void command_info() {
   sendlineBT(workbuf);
   sprintf(workbuf, "Current screen %d max screen %d", currentScreen, maxScreen);
   sendlineBT(workbuf);
-  sprintf(workbuf, "Sign width %d", signConfig.signWidth);
+  sprintf(workbuf, "Sign width %d Detected sign width %d", signConfig.signWidth, signConfig.detectedSignWidth);
   sendlineBT(workbuf);
   /*sprintf(workbuf, "Master buffer: [%s]", outputstring);
   

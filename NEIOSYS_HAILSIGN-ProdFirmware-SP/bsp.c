@@ -63,6 +63,8 @@ void BSP_Initialize(void)
       break;
   }
 
+  signConfig.detectedSignWidth = i;
+  
   if(i<200)
     signConfig.signWidth = i + 1;
     else signConfig.signWidth = DEFAULT_SIGN_RESOLUTION_X;
