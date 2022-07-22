@@ -61,6 +61,16 @@ sub reboot {
 	print $fh "R " . $self->{'password'} . "\n";
 }
 
+sub message {
+	my $self = shift;
+	my $msg = shift;
+	my $fh = $self->{'btfh'};
+
+	print $fh "M " . $msg . "\n";
+}
+
+	
+
 sub programmingMode {
 	my $self = shift;
 	
