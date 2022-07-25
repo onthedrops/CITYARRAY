@@ -33,6 +33,7 @@ sub Disconnect {
 	close($self->{'btfh'});
 	$self->{'btport'}->close();
 	$self->{'btfh'} = undef;
+	sleep(1);
 }
 
 sub Connect {
@@ -49,8 +50,8 @@ sub Connect {
 	$self->{'btfh'}->autoflush(1);
 	my $flags = fcntl($self->{'btfh'}, F_GETFL, 0);
 	fcntl($self->{'btfh'}, F_SETFL, $flags | O_NONBLOCK);
-#	sleep(1);
-	select(undef,undef,undef,0.5);
+	sleep(1);
+#	select(undef,undef,undef,0.5);
 	return 1;
 }
 
@@ -77,7 +78,7 @@ sub programmingMode {
 	
 	my $fh = $self->{'btfh'};
 	print $fh "p " . $self->{'password'} . "\n";
-#	sleep(1);
+	sleep(1);
 }
 
 sub putLine {
