@@ -22,6 +22,10 @@ $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
 
 $pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signd.pid';
+$sleep = S2Config::getConfigValue('startupsleep');
+if($sleep) {
+	sleep($sleep);
+}
 
 if(-f $pidFile) {
 	open(PID, "<$pidFile");
