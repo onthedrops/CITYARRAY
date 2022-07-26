@@ -43,7 +43,11 @@ sub Connect {
 	$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 
 	if($self->{'btport'}->connect($addr, 1) != 0) {
-		return 0;
+		$self->{'err'} = $!;
+		if($! =~ /Operation already in progress/) {
+		} else {
+			return 0;
+		}
 	}
 
 	$self->{'btfh'} = $self->{'btport'}->perlfh();

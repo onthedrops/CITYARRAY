@@ -116,7 +116,7 @@ while($main::alive) {
 	$sth->execute();
 	while(($mac, $signId, $poll) = $sth->fetchrow_array()) {
 		if(!$bluetooth->Connect($mac)) {
-			slog("6/7 failed to connect to $mac");
+			slog("6/7/8 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			if($poll == 6) {
@@ -137,7 +137,7 @@ while($main::alive) {
 	$sth->execute();
 	while(($mac, $signId) = $sth->fetchrow_array()) {
 		if(!$bluetooth->Connect($mac)) {
-			slog("5 failed to connect to $mac");
+			slog("5 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			my $value = $bluetooth->getInfo();
@@ -160,7 +160,7 @@ while($main::alive) {
 	while(($mac, $signId) = $sth->fetchrow_array()) {
 		slog("Reading data from sign $mac");
 		if(!$bluetooth->Connect($mac)) {
-			slog("1 failed to connect to $mac");
+			slog("1 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 		
@@ -185,7 +185,7 @@ while($main::alive) {
 		slog("Writing data to sign $mac");
 
 		if(!$bluetooth->Connect($mac)) {
-			slog("2 failed to connect to $mac");
+			slog("2 failed to connect to $mac: " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			$bluetooth->programmingMode();
