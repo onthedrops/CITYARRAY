@@ -1,6 +1,7 @@
 <xml>
 	<test>value</test>
 
+	<sleep>1</sleep>
 	<default_user>sign</default_user>
 	<default_pass>ofthetimes</default_pass>
 	<default_db>sign</default_db>
