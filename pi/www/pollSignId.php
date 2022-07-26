@@ -43,7 +43,7 @@
 		echo "<TR><TD><INPUT NAME=$field SIZE=128 VALUE=\"" . $data[$field] . "\"></TD></TR>";
 	}
 ?>
-<TR><TD><INPUT TYPE=Submit NAME=Reboot VALUE=Reboot><INPUT TYPE=Submit NAME=Ident VALUE=Ident><INPUT TYPE=Submit NAME=ProgMode></TD></TR>
+<TR><TD><INPUT TYPE=Submit NAME=Reboot VALUE=Reboot><INPUT TYPE=Submit NAME=Ident VALUE=Ident><INPUT TYPE=Submit NAME=ProgMode VALUE=ProgMode></TD></TR>
 
 </TABLE>
 </FORM>
