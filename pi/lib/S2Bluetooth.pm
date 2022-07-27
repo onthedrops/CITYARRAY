@@ -18,6 +18,9 @@ sub getSigns {
 	
 	my $return_devices = {};
 	foreach $addr (keys %{$devices}) {
+		if($main::debug) {
+			print "--> $addr\n";
+		}
 		if($devices->{$addr} =~ /SIGN.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
 		} elsif($addr =~ /C4:4F.*/) {
