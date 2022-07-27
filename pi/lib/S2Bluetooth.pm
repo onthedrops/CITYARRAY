@@ -47,7 +47,7 @@ sub Connect {
 
 	for(my $retries=0;$retries<3;$retries++) {
 		if($self->{'btport'}->connect($addr, 1) != 0) {
-			push(@{$self->{'errs'}}, $!;
+			push(@{$self->{'errs'}}, $!);
 			$self->{'err'} = join(",", @{$self->{'errs'}});
 
 			if($! =~ /Operation already in progress/) {
