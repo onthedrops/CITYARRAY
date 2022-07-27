@@ -288,11 +288,11 @@ sub btscan {
 			($signId) = $dbh->selectrow_array("SELECT LAST_INSERT_ID()");
 		}
 
-		foreach $mac (keys %{$signs}) {
-			slog("did not see $mac");
-			$id = $signs->{$mac}->{'signBluetoothId'};
-			$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
-		}
+	}
+	foreach $mac (keys %{$signs}) {
+		slog("did not see $mac");
+		$id = $signs->{$mac}->{'signBluetoothId'};
+		$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
 	}
 }
 
