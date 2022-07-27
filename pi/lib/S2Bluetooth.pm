@@ -43,13 +43,18 @@ sub Connect {
 	$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 
 	my $ok = 0;
+	$self->{'errs'} = ();
 
 	for(my $retries=0;$retries<3;$retries++) {
 		if($self->{'btport'}->connect($addr, 1) != 0) {
-			$self->{'err'} = $retries . '-' . $!;
+			push(@{$self->{'errs'}}, $!;
+			$self->{'err'} = join(",", @{$self->{'errs'}});
+
 			if($! =~ /Operation already in progress/) {
 				last;
 				$ok = 1;
+			} else {
+				$self->{'btport'}->close();
 			} 
 		} else {
 			$ok = 1;
