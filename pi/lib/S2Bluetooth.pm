@@ -19,7 +19,8 @@ sub getSigns {
 	my $return_devices = {};
 	foreach $addr (keys %{$devices}) {
 		if($main::debug) {
-			print "--> $addr\n";
+			my $name = $devices->{$addr};
+			print "--> $addr [$name]\n";
 		}
 		if($devices->{$addr} =~ /SIGN.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
