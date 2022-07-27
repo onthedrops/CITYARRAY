@@ -22,6 +22,8 @@ sub getSigns {
 			$return_devices->{$addr} = $devices->{$addr};
 		} elsif($addr =~ /C4:4F.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
+		} elsif($addr =~ /4C:75.*/) {
+			$return_devices->{$addr} = $devices->{$addr};
 		}
 	}
 	
