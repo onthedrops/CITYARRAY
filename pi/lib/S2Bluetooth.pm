@@ -40,12 +40,12 @@ sub Connect {
 	my $self = shift;
 	my $addr = shift;
 
-	$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 
 	my $ok = 0;
 	$self->{'errs'} = ();
 
 	for(my $retries=0;$retries<3;$retries++) {
+		$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 		if($self->{'btport'}->connect($addr, 1) != 0) {
 			push(@{$self->{'errs'}}, $!);
 			$self->{'err'} = join(",", @{$self->{'errs'}});
