@@ -42,13 +42,22 @@ sub Connect {
 
 	$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 
-	if($self->{'btport'}->connect($addr, 1) != 0) {
-		$self->{'err'} = $!;
-		if($! =~ /Operation already in progress/) {
+	my $ok = 0;
+
+	for(my $retries=0;$retries<3;$retries++) {
+		if($self->{'btport'}->connect($addr, 1) != 0) {
+			$self->{'err'} = $!;
+			if($! =~ /Operation already in progress/) {
+				last;
+				$ok = 1;
+			} 
 		} else {
-			return 0;
+			$ok = 1;
+			last;
 		}
 	}
+
+	return 0 if(!$ok);
 
 	$self->{'btfh'} = $self->{'btport'}->perlfh();
 	$self->{'btfh'}->autoflush(1);
