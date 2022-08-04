@@ -26,7 +26,7 @@ if(! -c $tty) {
 	slog("$tty doesn't exist. No sign plugged in?");
 }
 
-my $cmd = "/usr/local/bin/esptool.py --baud 921600 --port $tty write_flash 0x8000 /home/sign-firmware/util/part_table.bin 0x10000 /home/sign-firmware/NEIOSYS_HAILSIGN-ProdFirmware-SP/NEIOSYS_HAILSIGN-ProdFirmware-SP.ino.esp32.bin";
+my $cmd = "/usr/local/bin/esptool.py  --baud 921600 --port $tty write_flash 0x1000 /home/sign-firmware/util/boot_dl.bin 0x8000 /home/sign-firmware/util/part_table.bin 0x10000 /home/sign-firmware/NEIOSYS_HAILSIGN-ProdFirmware-SP/NEIOSYS_HAILSIGN-ProdFirmware-SP.ino.esp32.bin";
 
 slog("Running $cmd");
 
