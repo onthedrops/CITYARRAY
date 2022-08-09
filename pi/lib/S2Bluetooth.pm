@@ -18,9 +18,17 @@ sub getSigns {
 	
 	my $return_devices = {};
 	foreach $addr (keys %{$devices}) {
+		if($main::debug) {
+			my $name = $devices->{$addr};
+			print "--> $addr [$name]\n";
+		}
 		if($devices->{$addr} =~ /SIGN.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
 		} elsif($addr =~ /C4:4F.*/) {
+			$return_devices->{$addr} = $devices->{$addr};
+		} elsif($addr =~ /4C:75.*/) {
+			$return_devices->{$addr} = $devices->{$addr};
+		} elsif($addr =~ /34:AB.*/) {
 			$return_devices->{$addr} = $devices->{$addr};
 		}
 	}
@@ -33,24 +41,43 @@ sub Disconnect {
 	close($self->{'btfh'});
 	$self->{'btport'}->close();
 	$self->{'btfh'} = undef;
+	sleep(1);
 }
 
 sub Connect {
 	my $self = shift;
 	my $addr = shift;
 
-	$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
 
-	if($self->{'btport'}->connect($addr, 1) != 0) {
-		return 0;
+	my $ok = 0;
+	$self->{'errs'} = ();
+
+	for(my $retries=0;$retries<3;$retries++) {
+		$self->{'btport'} = Net::Bluetooth->newsocket("RFCOMM");
+		if($self->{'btport'}->connect($addr, 1) != 0) {
+			push(@{$self->{'errs'}}, $!);
+			$self->{'err'} = join(",", @{$self->{'errs'}});
+
+			if($! =~ /Operation already in progress/) {
+				last;
+				$ok = 1;
+			} else {
+				$self->{'btport'}->close();
+			} 
+		} else {
+			$ok = 1;
+			last;
+		}
 	}
+
+	return 0 if(!$ok);
 
 	$self->{'btfh'} = $self->{'btport'}->perlfh();
 	$self->{'btfh'}->autoflush(1);
 	my $flags = fcntl($self->{'btfh'}, F_GETFL, 0);
 	fcntl($self->{'btfh'}, F_SETFL, $flags | O_NONBLOCK);
-#	sleep(1);
-	select(undef,undef,undef,0.5);
+	sleep(2);
+#	select(undef,undef,undef,0.5);
 	return 1;
 }
 
@@ -77,7 +104,7 @@ sub programmingMode {
 	
 	my $fh = $self->{'btfh'};
 	print $fh "p " . $self->{'password'} . "\n";
-#	sleep(1);
+	sleep(1);
 }
 
 sub putLine {

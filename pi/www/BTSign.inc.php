@@ -111,6 +111,11 @@ class BTSign {
 		return $this->poll($signId, 7);
 	}
 
+	public function progMode($signId)
+	{
+		return $this->poll($signId, 8);
+	}
+
 	public function getSigns()
 	{
 		// returns a array listing all signs that can be currently seen

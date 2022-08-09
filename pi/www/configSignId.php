@@ -50,7 +50,7 @@
 		echo "<TR><TD><INPUT NAME=$field SIZE=128 VALUE=\"" . $data[$field] . "\"></TD></TR>";
 	}
 
-	echo "<TR><TD>Reboot after programming?<INPUT TYPE=Checkbox NAME=reboot VALUE=1/></TD><TD></TD></TR>";
+	echo "<TR><TD>Reboot after programming?<INPUT TYPE=Checkbox NAME=reboot VALUE=1 CHECKED/></TD><TD></TD></TR>";
 ?>
 </TABLE>
 <INPUT TYPE=Submit>

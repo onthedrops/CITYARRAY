@@ -65,6 +65,9 @@ open(PID,">$pidFile");
 print PID "$$\n";
 close(PID);
 
+unlink($main::logFile) if(!S2Config::getConfigValue('retain'));
+
+
 $main::alive = 1;
 $SIG{'TERM'} = sigterm;
 $SIG{'INT'} = sigterm;
@@ -76,7 +79,7 @@ if(fork()) {
 	# child
 	while($main::alive) {
 		btscan();
-		sleep(1);
+		sleep(10);
 	}
 	exit(0);
 }
@@ -109,19 +112,23 @@ while($main::alive) {
 	# scan for signs marked poll = 1
 	# load configuration variables from sign onto database, set poll = 0
 
-	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId, poll  FROM signBluetooth WHERE poll IN (6, 7) AND currentlySeen = 1");
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId, poll  FROM signBluetooth WHERE poll IN (6, 7, 8) AND currentlySeen = 1");
 	$sth->execute();
 	while(($mac, $signId, $poll) = $sth->fetchrow_array()) {
 		if(!$bluetooth->Connect($mac)) {
-			slog("failed to connect to $mac");
+			slog("6/7/8 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			if($poll == 6) {
 				$bluetooth->reboot();
 			} elsif($poll == 7) {
 				$bluetooth->message("IDENT");
+			} elsif($poll == 8) {
+				$bluetooth->programmingMode();
 			}
+
 			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+			slog("6/7 disconnecting from $mac");
 			$bluetooth->Disconnect();
 		}
 	}
@@ -130,7 +137,7 @@ while($main::alive) {
 	$sth->execute();
 	while(($mac, $signId) = $sth->fetchrow_array()) {
 		if(!$bluetooth->Connect($mac)) {
-			slog("failed to connect to $mac");
+			slog("5 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			my $value = $bluetooth->getInfo();
@@ -141,9 +148,9 @@ while($main::alive) {
 			$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
 			
 
+			slog("5 disconnecting from $mac");
 			$bluetooth->Disconnect();
 			sleep(1);
-#			select(undef,undef,undef,0.1);
 			$dbh->do("UPDATE signBluetooth set poll = 1 WHERE signBluetoothId = $signId");
 		}
 	}
@@ -153,7 +160,7 @@ while($main::alive) {
 	while(($mac, $signId) = $sth->fetchrow_array()) {
 		slog("Reading data from sign $mac");
 		if(!$bluetooth->Connect($mac)) {
-			slog("failed to connect to $mac");
+			slog("1 failed to connect to $mac : " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 		
@@ -165,6 +172,8 @@ while($main::alive) {
 				my $keyq = $dbh->quote($key);
 				$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
 			}
+
+			slog("1 disconnecting from $mac");
 			$bluetooth->Disconnect();
 			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
 		}
@@ -176,7 +185,7 @@ while($main::alive) {
 		slog("Writing data to sign $mac");
 
 		if(!$bluetooth->Connect($mac)) {
-			slog("failed to connect to $mac");
+			slog("2 failed to connect to $mac: " . $bluetooth->{'err'});
 			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
 		} else {
 			$bluetooth->programmingMode();
@@ -205,6 +214,7 @@ while($main::alive) {
 				$bluetooth->reboot();
 			}
 
+			slog("2 disconnect from $mac");
 			$bluetooth->Disconnect();
 			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
 		}
@@ -278,11 +288,11 @@ sub btscan {
 			($signId) = $dbh->selectrow_array("SELECT LAST_INSERT_ID()");
 		}
 
-		foreach $mac (keys %{$signs}) {
-			slog("did not see $mac");
-			$id = $signs->{$mac}->{'signBluetoothId'};
-			$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
-		}
+	}
+	foreach $mac (keys %{$signs}) {
+		slog("did not see $mac");
+		$id = $signs->{$mac}->{'signBluetoothId'};
+		$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
 	}
 }
 

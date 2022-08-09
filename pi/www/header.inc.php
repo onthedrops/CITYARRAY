@@ -25,8 +25,13 @@ function noCache() {
 }
 
 function drawHeader() {
-	echo "<A HREF=/>Main</A>&nbsp;<A HREF=/configSign.php>Configure Signs</A>&nbsp;&nbsp;<A HREF=/pollSign.php>Debug Signs</A>&nbsp;&nbsp;<HR>";
+	echo "<A HREF=/>Main</A>&nbsp;&nbsp;";
 
+	if(is_dir('/home/pi')) {
+		echo "<A HREF=/configSign.php>Configure Signs</A>&nbsp;&nbsp;<A HREF=/pollSign.php>Debug Signs</A>&nbsp;&nbsp;<A HREF=/update.php>Update</A>&nbsp;&nbsp;<A HREF=/log.php>Logs</A>&nbsp;&nbsp;<A HREF=/remote.php>Remote Support</A>&nbsp;&nbsp;<A HREF=/program.php>Program sign</A>&nbsp;&nbsp;<A HREF=/net.php>pi eth addr</A>";
+	}
+		
+	echo "<HR>";
 
 }
 

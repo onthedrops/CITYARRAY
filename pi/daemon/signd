@@ -22,6 +22,10 @@ $home = S2Config::getHomedir();
 $logFile = S2Config::getConfigValue('logfile') || '/var/log/signd.log';
 
 $pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signd.pid';
+$sleep = S2Config::getConfigValue('startupsleep');
+if($sleep) {
+	sleep($sleep);
+}
 
 if(-f $pidFile) {
 	open(PID, "<$pidFile");
@@ -178,6 +182,14 @@ while($main::alive) {
 
 		($shutdown) = $dbh->selectrow_array("SELECT shutdown_requested FROM shutdown");
 
+		if($shutdown == 6) {
+				slog("Programming requested");
+
+				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
+				$result = system("/home/sign-firmware/pi/daemon/program-sign &");
+				slog("Result of program-sign: $result");
+		}
+				
 		if($shutdown == 5) {
 				slog("Remote connection requested");
 				$dbh->do("UPDATE shutdown SET shutdown_requested = 0");
