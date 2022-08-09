@@ -173,7 +173,7 @@ void setup()
 void initTask(void * pvParameters) {
     slog("initTask starting\n");
 
-   BSP_Initialize();
+  BSP_Initialize();
   DISPLAY_Initialize();  
   BCM_Initialize();    
   vled_on();
