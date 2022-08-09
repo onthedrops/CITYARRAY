@@ -50,15 +50,18 @@ void BSP_Initialize(void)
   digitalWrite(DATA_RED_PIN, LOW);
   int i;
   
-  for(i=0;i<256;i++) {
+  for(i=0;i<512;i++) {
     digitalWrite(DATA_CLK_PIN, HIGH);
+    ets_delay_us(1);
     digitalWrite(DATA_CLK_PIN, LOW);
   }
 
   digitalWrite(DATA_RED_PIN, HIGH);
   for(i=0;i<256;i++) {
     digitalWrite(DATA_CLK_PIN, HIGH);
+    ets_delay_us(1);
     digitalWrite(DATA_CLK_PIN, LOW);
+    ets_delay_us(1);
     if(digitalRead(DATA_RETURN_PIN) == HIGH)
       break;
   }
