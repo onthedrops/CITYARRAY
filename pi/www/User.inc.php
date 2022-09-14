@@ -301,7 +301,7 @@ class User {
 
 		$dbh = $user->dbh;
 		$dbh->Query("INSERT INTO signMessageArchive SET signId = $signId, messageId=$messageId,setDate=NOW()");
-		$dbh->Query("UPDATE signMessage SET setDate=NOW(), messageId = $messageId WHERE signId = $signId");
+		$dbh->Query("REPLACE INTO signMessage SET setDate=NOW(), messageId = $messageId, signId = $signId");
 		$dbh->Query("INSERT INTO signNotifies SET signId=$signId,setTime=NOW(),notified=0");
 
 		// todo: validate input before acting on it!

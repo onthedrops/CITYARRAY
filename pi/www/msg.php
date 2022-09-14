@@ -55,12 +55,12 @@
 		exit(0);
 	}
 
-	if($signVersion != $_REQUEST['ver']) {
+	if(isset($_REQUEST['ver']) && $signVersion != $_REQUEST['ver']) {
 		$signVersionq = $dbh->equote($_REQUEST['ver']);
 		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
 	}
 
-	if($_REQUEST['ver'] != firmware_version()) {
+	if(isset($_REQUEST['ver']) && $_REQUEST['ver'] != firmware_version()) {
 		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
 		$dbh->next_record();
 		$auto = $dbh->f("configValue");
