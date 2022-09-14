@@ -1,7 +1,10 @@
 <?php
 
+	global $noheader;
+	$noheader = 1;
 	include('header.inc.php');
 	
+
 	if(isset($_REQUEST['id'])) {
 
 		$signId = $_REQUEST['id'];

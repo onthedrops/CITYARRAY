@@ -14,7 +14,9 @@ if($_SESSION['userId']) {
 	exit(0);
 }
 
-drawHeader();
+global $noheader;
+if($noheader != 1)
+	drawHeader();
 
 function noCache() {
         header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
