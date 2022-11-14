@@ -12,6 +12,12 @@ class User {
 	private function __construct()
 	{
         	$this->dbh = new SQLng();
+		if($_REQUEST['apikey']) {
+			$userId = $this->dbh->selectOne("SELECT userId FROM apiKeys WHERE apiKey = " . $this->dbh->equote($_REQUEST['apikey']));
+			if($userId) 
+				$this->userId = $userId;
+
+		}
 	}
 
 	public function requestShutdown($mode=1)
@@ -63,6 +69,16 @@ class User {
 	public function owns($signId)
 	{
 		// todo : make sure user is allowed to access sign
+		if(!$this->userId)
+			return false;
+
+		if(!$signId)
+			return false;
+
+		$rsignId = $this->dbh->selectOne("SELECT s.signId FROM signs s, signsXnetworks sn, usersXnetworks un WHERE s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId . " and s.signId = $signId");
+
+		if(!$rsignId)
+			return false;
 
 		return true;
 	}
