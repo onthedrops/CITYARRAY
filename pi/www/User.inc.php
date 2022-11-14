@@ -66,6 +66,23 @@ class User {
 		return $ret;
 	}
 
+	public function ownsGruop($groupId)
+	{
+		if(!$this->userId)
+			return false;
+
+		if(!is_numeric($groupId))
+			return false;
+
+		$rsignId = $this->dbh->selectOne("SELECT s.signId FROM signs s, signsXnetworks sn, usersXnetworks un, signsXgroups sg WHERE s.signId = sn.signId AND sn.networkId = un.networkId AND sg.signId = s.signId AND sg.groupId = $groupId AND un.userId = " . $this->userId);
+		
+		if($rsignId)
+			return true;
+
+		return false;
+		
+	}
+
 	public function owns($signId)
 	{
 		// todo : make sure user is allowed to access sign
