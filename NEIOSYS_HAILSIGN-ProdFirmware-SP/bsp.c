@@ -62,13 +62,18 @@ int getSignWidth() {
   int i, j;
   int ok = 1;
   int width = 0;
-  
-  for(i=0;i<10;i++) {
-     shift_registers_clear(); 
-    for(j=0;j<3;j++) {
+
+  for(i=0;i<15;i++) {
+     ok = 1;
+    for(j=0;j<10;j++) {
+      delay(25);
+      shift_registers_clear(); 
+
       if(width) {
-        if(width != checkSignWidth())
+        if(width != checkSignWidth()) {
           ok = 0;
+          width = 0;
+        }
       } else {
         width = checkSignWidth();
       }
@@ -76,7 +81,10 @@ int getSignWidth() {
     if(ok)
       return(width);
   }
+
+  return 256;
 }
+
 
 int checkSignWidth() {
   digitalWrite(DATA_RED_PIN, LOW);

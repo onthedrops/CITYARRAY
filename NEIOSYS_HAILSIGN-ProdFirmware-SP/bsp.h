@@ -36,6 +36,8 @@ extern "C" {
 // *****************************************************************************
 
 // PIN Configuration
+// #define __OLDSIGN
+
 #define VLED_EN_PIN       23
 #define DATA_RED_PIN      4
 #define DATA_GREEN_PIN    5
@@ -44,7 +46,11 @@ extern "C" {
 #define ROW_A_PIN         32
 #define ROW_B_PIN         33
 #define ROW_C_PIN         25
+#ifdef __OLDSIGN
+#define ROW_D_PIN         26
+#else
 #define ROW_D_PIN         2
+#endif
 #define ROW_EN_PIN        27
 #define DATA_RETURN_PIN   35
 
