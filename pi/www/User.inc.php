@@ -66,7 +66,7 @@ class User {
 		return $ret;
 	}
 
-	public function ownsGruop($groupId)
+	public function ownsGroup($groupId)
 	{
 		if(!$this->userId)
 			return false;
