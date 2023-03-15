@@ -78,6 +78,7 @@ if(fork()) {
 } else {
 	# child
 	while($main::alive) {
+		$SIG{'CHLD'} = undef;
 		btscan();
 		sleep(10);
 	}
