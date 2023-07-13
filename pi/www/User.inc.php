@@ -12,7 +12,7 @@ class User {
 	private function __construct()
 	{
         	$this->dbh = new SQLng();
-		if($_REQUEST['apikey']) {
+		if(isset($_REQUEST['apikey']) && $_REQUEST['apikey']) {
 			$userId = $this->dbh->selectOne("SELECT userId FROM apiKeys WHERE apiKey = " . $this->dbh->equote($_REQUEST['apikey']));
 			if($userId) 
 				$this->userId = $userId;
