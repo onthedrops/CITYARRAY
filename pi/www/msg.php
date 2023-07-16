@@ -128,7 +128,9 @@
 
 	
 	$dbh->Query("SELECT messageId, firstShownDate FROM signMessage WHERE signId = $signId");
-	if(!$dbh->next_record() || !$dbh->f("messageId")) {
+	$ok = $dbh->next_record();
+
+	if(! $ok || !$dbh->f("messageId")) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 no current message', true, 500);
 		exit(0);
 	}
@@ -137,7 +139,7 @@
 	$messageId = $dbh->f("messageId");
 	$additionalSQL = "";
 
-	if(!$dbh->f("firstShownDate")) {
+	if(!$ok || !$dbh->f("firstShownDate")) {
 		$additionalSQL = ",firstShownDate=NOW()";
 	}	
 	
