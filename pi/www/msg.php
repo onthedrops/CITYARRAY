@@ -128,8 +128,7 @@
 
 	
 	$dbh->Query("SELECT messageId, firstShownDate FROM signMessage WHERE signId = $signId");
-	$dbh->next_record();
-	if(!$dbh->f("messageId")) {
+	if(!$dbh->next_record() || !$dbh->f("messageId")) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 no current message', true, 500);
 		exit(0);
 	}
