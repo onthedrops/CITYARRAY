@@ -209,7 +209,9 @@ void networkTask(void * pvParameters) {
                           networkState = 2;             
                         } else {
                           WiFi.begin(signConfig.ssid, signConfig.password);
-                          slog("Connecting from %s\n", WiFi.macAddress());
+                          uint8_t macAddress_v[6];
+                          WiFi.macAddress(macAddress_v);
+                          slog("Connecting from %02X:%02X:%02X:%02X:%02X:%02X\n", macAddress_v[0], macAddress_v[1], macAddress_v[2], macAddress_v[3], macAddress_v[4], macAddress_v[5]);
 
                           networkState = 1;
                         } 
