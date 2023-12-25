@@ -316,6 +316,8 @@ void DISPLAY_Write_String_1Bit(DISPLAY_BITMAP_1BIT bitmap, char *string)
                 char c = string[stringPtr];
 
 		// translate character
+    // if anyone is wondering, this is rotating the character through 90 degrees
+    
 		char t[8] = { 0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00 };
 
 		t[0] = (font[c-32][7] & 0x01) | ((font[c-32][6] & 0x01) << 1) | ((font[c-32][5] & 0x01) << 2) | ((font[c-32][4] & 0x01) << 3) | ((font[c-32][3] & 0x01) << 4) | ((font[c-32][2] & 0x01) << 5) | ((font[c-32][1] & 0x01) << 6) | ((font[c-32][0] & 0x01) << 7);

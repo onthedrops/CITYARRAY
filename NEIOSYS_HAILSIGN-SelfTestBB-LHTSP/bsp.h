@@ -44,7 +44,8 @@ extern "C" {
 #define ROW_A_PIN         32
 #define ROW_B_PIN         33
 #define ROW_C_PIN         25
-#define ROW_D_PIN         26
+// 26 on old hardware
+#define ROW_D_PIN         2
 #define ROW_EN_PIN        27
 #define DATA_RETURN_PIN   35
 

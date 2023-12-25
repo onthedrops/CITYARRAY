@@ -6,7 +6,8 @@ use DBI;
 
 sub new {
 
-        return $S2dobj::dbobj_instance if($S2dobj::dbobj_instance);
+        return $S2dbobj::dbobj_instance if($S2dbobj::dbobj_instance);
+
         my $type = shift;
         my $self = {};
 

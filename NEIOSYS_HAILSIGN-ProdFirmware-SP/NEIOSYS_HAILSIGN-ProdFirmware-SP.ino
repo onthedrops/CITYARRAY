@@ -10,7 +10,10 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <HardwareSerial.h>
+#include <Wire.h>
 #include "AsyncUDP.h"
+#include <esp_wifi.h>
+
 
 #include <HTTPClient.h>
 #include <string.h>
@@ -70,7 +73,7 @@ uint8_t gBrightness = 0x0F;
 uint8_t rBrightness = 0x0F;
 
 unsigned long lastTime = 0;
-unsigned long timerDelay = 120000;
+unsigned long timerDelay = 10;
 
 BluetoothSerial SerialBT;
 AsyncUDP udp;
@@ -107,13 +110,18 @@ void setup()
   Serial.begin(115200);
   CascadeSerial.begin(115200);
   
-  Serial.println("Initializing");
+  slog("Initializing");
   delay(500);
   
   setupNVS();
   loadConfig();
-  
-  openBT();
+  signConfig.isMaster = isMaster();
+
+  if(signConfig.isMaster) {
+    slog("Master\n");
+    openBT();
+  } 
+   
   
   
 #ifdef _XDEBUG  
@@ -122,9 +130,12 @@ void setup()
 
   for(r=0;r<SCREEN_BUFFER_COUNT;r++)
     pagestring[r][0] = '\0';
-    
-  sprintf(pagestring[7], "... V%s WAITING FOR NETWORK ...",SIGN_VERSION);
-  
+
+  if(signConfig.isMaster) {
+    sprintf(pagestring[7], "... V%s WAITING FOR NETWORK ...",SIGN_VERSION);
+  } else {
+    sprintf(pagestring[7], "... V%s WAITING FOR SLAVE ...", SIGN_VERSION);
+  }
   
 /*
    if(!SerialBT.begin("ESP32")){
@@ -164,13 +175,13 @@ void setup()
 }
 
 void initTask(void * pvParameters) {
-    Serial.print("initTask starting ");
+    slog("initTask starting\n");
 
-   BSP_Initialize();
+  BSP_Initialize();
   DISPLAY_Initialize();  
   BCM_Initialize();    
   vled_on();
-    Serial.print("initTask done ");
+    slog("initTask done\n");
  
 }
 
@@ -179,22 +190,26 @@ void initTask(void * pvParameters) {
 
 void networkTask(void * pvParameters) {
     //disableCore0WDT();
-    WiFi.setAutoReconnect(true);
+    HTTPClient http;
+
+    if(signConfig.isMaster) {
+      
+      WiFi.setAutoReconnect(true);
     
-  while(1) {
+      while(1) {
     //  feedLoopWDT();
-      delay(10);
+        delay(10);
         
-      switch(networkState) {
+        switch(networkState) {
         
          case 0:    if(signConfig.ssid) {
  
                        if(WiFi.status() == WL_CONNECTED) {
+                          slog("Already connected, jumping to 2");
                           networkState = 2;             
                         } else {
                           WiFi.begin(signConfig.ssid, signConfig.password);
-                          Serial.print("Connecting from ");
-                          Serial.println(WiFi.macAddress());
+                          slog("Connecting from %s\n", WiFi.macAddress());
 
                           networkState = 1;
                         } 
@@ -202,7 +217,7 @@ void networkTask(void * pvParameters) {
                       lastTime = millis();
                     }
                     break;
-         case 1:    
+          case 1:    
                     if(WiFi.status() == WL_CONNECTED) {
                         execNow = 1; // we need to connect once so remote end knows our IP address
                         networkState = 2; 
@@ -210,7 +225,7 @@ void networkTask(void * pvParameters) {
                         udp.onPacket([](AsyncUDPPacket packet) {
                           execNow = 1;
                         });
-                        Serial.println("Connected");  
+                        slog("Connected\n");  
                     }
                     
                      if ((millis() - lastTime) > 10000) {
@@ -219,7 +234,7 @@ void networkTask(void * pvParameters) {
                     }
                     
                     break;     
-         case 2:  
+          case 2:  
                       
                       if (execNow == 1 || ((millis() - lastTime) > timerDelay)) {
                         if(WiFi.status() != WL_CONNECTED) {
@@ -228,19 +243,21 @@ void networkTask(void * pvParameters) {
                           if(signConfig.fetchHost) {
                           char workbuf[256];
                         
-                          HTTPClient http;
-                          sprintf(workbuf, "%s&ver=%s", signConfig.fetchHost, SIGN_VERSION);
+                          sprintf(workbuf, "%s&ver=%s&seq=%d", signConfig.fetchHost, SIGN_VERSION, signConfig.seq);
 
 //                          http.begin(signConfig.fetchHost);
                           http.begin(workbuf);
-                          
-                          Serial.print("Fetching from ");
-                          Serial.println(workbuf);
+                          http.setTimeout(31000);
+                          slog("Fetching from %s\n", workbuf);
                         
                           int httpResponseCode = http.GET();
-      
-                          if (httpResponseCode>0) {
+
+                          if(httpResponseCode == 204) {
+                            // do not incrmeent seq
+                          } else if (httpResponseCode == 200) {
                             String payload = http.getString();
+                            // increment seq
+                            signConfig.seq++;
 
                             if(payload.length() < HTTP_INBUF_SIZE) {
                               payload.toCharArray((char *)workstring,payload.length()+1);
@@ -266,8 +283,14 @@ void networkTask(void * pvParameters) {
                     networkState = 2;
 #endif
                   break;
-      } // end switch
-  } // end while 1
+            case 4:
+                    networkState = 5;
+                  break;
+            case 5:
+                  break;
+        } // end switch
+      } // end while 1
+    } // end if master
 } // end task
 
 int redBrightnessOffset = 0;
@@ -296,7 +319,8 @@ void loop()
 //For testing purpose only
 //---------------------------------------------
   softDelay++; 
-  if (softDelay >= 50000 && BCM_OK()) 
+//  if (softDelay >= 50000 && BCM_OK()) 
+  if(softDelay >= signConfig.scrollSpeed && BCM_OK())
   {
     if(CascadeSerial.available()) {
       readchar = CascadeSerial.read();
@@ -326,15 +350,13 @@ void loop()
  
      if(newMessage) {
         newMessage = 0;
-        Serial.print("New message: [");
-        Serial.print((char *)workstring);
-        Serial.println("]");
-
+        slog("New message: [%s]\n", workstring);
+ 
         sprintf(outputstring, "%s", workstring);
 
            
 
-        if(strstr(outputstring,"~!UPGRADE")) {
+        if(strstr(outputstring,"~!UPGRADE2")) {
           do_firmware_upgrade();
         }
                 
@@ -344,6 +366,20 @@ void loop()
           scrollVal = 1;
         }
 
+        if(strstr(outputstring, "~!1")) {
+          signConfig.scrollSpeed = 10000;
+        } else if(strstr(outputstring, "~!2")) {
+          signConfig.scrollSpeed = 25000;
+        } else if(strstr(outputstring, "~!3")) {
+          signConfig.scrollSpeed = 35000;
+        } else if(strstr(outputstring, "~!4")) {
+          signConfig.scrollSpeed = 50000;
+        } else if(strstr(outputstring, "~!5")) {
+          signConfig.scrollSpeed = 65000;
+        } else if(strstr(outputstring, "~!6")) {
+          signConfig.scrollSpeed = 75000;
+        }
+        
         // split output string into pages
         // ~!P is page command
         char p = 0;
@@ -374,9 +410,7 @@ void loop()
     } // end of scan for newline. 
            
     if(newDisplay) {
-       Serial.print("New display: [");
-        Serial.print((char *)pagestring[currentScreen]);
-        Serial.println("]");
+       slog("New display: [%s]", pagestring[currentScreen]);
  
         Clear_SBitmap2(testBitmap3);
        
@@ -394,10 +428,8 @@ void loop()
            } else {
                 *line2 = '\0';
                 line2++;
-                Serial.print("Workbuf:");
-                Serial.print(workBuf);
-                Serial.print("line2:");
-                Serial.print(line2);
+                slog("Workbuf: %s line2: %s\n", workBuf, line2);
+       
                 testBitmap3 = Write_2HString_2Bit(workBuf,line2,6);    
                 }
            } else {
@@ -454,9 +486,17 @@ void loop()
     newDisplay =1;
   }
   
-void slog(char *p)
+void slog(char *fmt, ...)
 {
-   Serial.println(p);
+  char slog_buffer[384];
+  va_list ap;
+  
+  va_start (ap, fmt);
+  vsprintf(slog_buffer, fmt, ap);
+  va_end(ap);
+
+ 
+   Serial.print(slog_buffer);
 }
 
 void sendBT(char *p)
@@ -517,6 +557,19 @@ char *get_firmware_sig()
     return sig;
 }
 
+char isMaster() {
+  Wire.begin();
+  Wire.beginTransmission(0x6B);
+  Wire.write(0x0A);
+  Wire.endTransmission();
+  Wire.requestFrom(0x6B,1);
+  char c = Wire.read();
+  if(c&128) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
 
 /*******************************************************************************
  End of File

@@ -1,0 +1,299 @@
+#!/usr/bin/perl 
+
+use FindBin;
+use IO::Socket::INET;
+use Data::Dumper;
+use LWP::UserAgent;
+
+push(@INC, $FindBin::Bin . "/../lib");
+
+require S2Config;
+require S2dbobj;
+
+S2Config::setup('/home/sign-firmware/pi/conf/signd.xml');
+
+#check to see if net is installed
+
+$ret = system("dpkg -l libnet-bluetooth-perl > /dev/null");
+if($ret) {
+	slog("libnet-bluetooth-perl not installed, attempting to install");
+	$ret2 = system("apt-get install -y libnet-bluetooth-perl > /dev/null");
+	slog("install resulted in $ret2");
+}
+
+eval "require S2Bluetooth;";
+
+
+$home = S2Config::getHomedir();
+$logFile = S2Config::getConfigValue('logfile') || '/var/log/signbtd.log';
+
+$pidFile = S2Config::getConfigValue('pidfile') || $home . '/run/signbtd.pid';
+
+if(-f $pidFile) {
+	open(PID, "<$pidFile");
+	$pid = <PID>;
+	close(PID);
+	chop($pid);
+	if(-d "/proc/$pid") {
+		$target = readlink "/proc/$pid";
+		if($target =~ /.*signd/) {
+			die "Already running ($pid / $target)";
+		} else {
+			unlink($pidFile);
+		}
+	}
+}
+
+if($main::debug) {
+	print S2Config::dumpConfig();
+}
+
+if(!S2Config::getConfigValue('nofork')) {
+	if($pid = fork()) {
+		slog("Child $pid is forking");
+		exit(0);
+	} else {
+		close(STDIN);
+		close(STDOUT);
+		close(STDERR);
+	}	
+} else {
+	slog("Not forking");
+}
+
+open(PID,">$pidFile");
+print PID "$$\n";
+close(PID);
+
+unlink($main::logFile) if(!S2Config::getConfigValue('retain'));
+
+
+$main::alive = 1;
+$SIG{'TERM'} = sigterm;
+$SIG{'INT'} = sigterm;
+
+# either way we fork the bluetooth scanning thread
+if(fork()) {
+	# parent, do nothing
+} else {
+	# child
+	while($main::alive) {
+		$SIG{'CHLD'} = undef;
+		btscan();
+		sleep(10);
+	}
+	exit(0);
+}
+
+$dbh = S2dbobj::getHandle();
+my $bluetooth = new S2Bluetooth;
+
+$tick = 0;
+
+while($main::alive) {
+	#load existing signs into memory
+	slog("main loop " . $tick++) if($main::debug & 2);
+	my $sth = $dbh->prepare("SELECT * FROM signBluetooth");
+
+	$sth->execute();
+
+	while($x = $sth->fetchrow_hashref()) {
+		$signMac = $x->{'signMac'};
+		$signs->{$signMac} = $x;
+	}
+
+	select(undef,undef,undef,0.25);
+
+	my $dbh = S2dbobj::getHandle();
+
+	# scan bluetooth for signs
+	# if this is a existing sign, update the last seen and delete
+	# if this is a new sign, insert new row
+
+	# scan for signs marked poll = 1
+	# load configuration variables from sign onto database, set poll = 0
+
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId, poll  FROM signBluetooth WHERE poll IN (6, 7, 8) AND currentlySeen = 1");
+	$sth->execute();
+	while(($mac, $signId, $poll) = $sth->fetchrow_array()) {
+		if(!$bluetooth->Connect($mac)) {
+			slog("6/7/8 failed to connect to $mac : " . $bluetooth->{'err'});
+			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
+		} else {
+			if($poll == 6) {
+				$bluetooth->reboot();
+			} elsif($poll == 7) {
+				$bluetooth->message("IDENT");
+			} elsif($poll == 8) {
+				$bluetooth->programmingMode();
+			}
+
+			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+			slog("6/7 disconnecting from $mac");
+			$bluetooth->Disconnect();
+		}
+	}
+
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId  FROM signBluetooth WHERE poll = 5 AND currentlySeen = 1");
+	$sth->execute();
+	while(($mac, $signId) = $sth->fetchrow_array()) {
+		if(!$bluetooth->Connect($mac)) {
+			slog("5 failed to connect to $mac : " . $bluetooth->{'err'});
+			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
+		} else {
+			my $value = $bluetooth->getInfo();
+			my $valueq = $dbh->quote($value);
+			my $key = 'debug';
+			my $keyq = $dbh->quote($key);
+
+			$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
+			
+
+			slog("5 disconnecting from $mac");
+			$bluetooth->Disconnect();
+			sleep(1);
+			$dbh->do("UPDATE signBluetooth set poll = 1 WHERE signBluetoothId = $signId");
+		}
+	}
+
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId  FROM signBluetooth WHERE poll = 1 AND currentlySeen = 1");
+	$sth->execute();
+	while(($mac, $signId) = $sth->fetchrow_array()) {
+		slog("Reading data from sign $mac");
+		if(!$bluetooth->Connect($mac)) {
+			slog("1 failed to connect to $mac : " . $bluetooth->{'err'});
+			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
+		} else {
+		
+			my $sth2 = $dbh->prepare("SELECT signConfigKey FROM signConfigKeys");
+			$sth2->execute();
+			while(($key) = $sth2->fetchrow_array()) {
+				my $value = $bluetooth->getConfigValue($key);
+				my $valueq = $dbh->quote($value);
+				my $keyq = $dbh->quote($key);
+				$dbh->do("REPLACE INTO signConfigData SET signBluetoothId=$signId, signConfigKey = $keyq, signConfigValue = $valueq, readTIme = NOW()");
+			}
+
+			slog("1 disconnecting from $mac");
+			$bluetooth->Disconnect();
+			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+		}
+	}
+
+	my $sth = $dbh->prepare("SELECT signMac, signBluetoothId FROM signBluetooth WHERE poll = 2 AND currentlySeen = 1");
+	$sth->execute();
+	while(($mac, $signId) = $sth->fetchrow_array()) {
+		slog("Writing data to sign $mac");
+
+		if(!$bluetooth->Connect($mac)) {
+			slog("2 failed to connect to $mac: " . $bluetooth->{'err'});
+			$dbh->do("UPDATE signBluetooth set poll = -1 WHERE signBluetoothId = $signId");
+		} else {
+			$bluetooth->programmingMode();
+
+			my $sth2 = $dbh->prepare("SELECT signBluetoothId, signConfigKey, signConfigValue FROM signConfigData WHERE signBluetoothId = $signId AND dirty = 1");
+			$sth2->execute();
+
+			my $reboot = 0;
+
+			while(($signId2, $configKey, $configValue) = $sth2->fetchrow_array()) {
+				if($configKey eq "reboot") {
+					$reboot = $configValue;
+					next;
+				}
+
+				$bluetooth->putConfigValue($configKey, $configValue);
+				slog("Setting $signId $configKey to $configValue");
+
+				$configKeyq = $dbh->quote($configKey);
+				$dbh->do("UPDATE signConfigData SET dirty = 0 WHERE signBluetoothId = $signId AND signConfigKey = $configKeyq");
+
+			}
+
+			if($reboot) {
+				slog("rebooting sign");
+				$bluetooth->reboot();
+			}
+
+			slog("2 disconnect from $mac");
+			$bluetooth->Disconnect();
+			$dbh->do("UPDATE signBluetooth set poll = 0 WHERE signBluetoothId = $signId");
+		}
+	}
+
+
+
+	# scan for signs marked poll = 2
+	# push configuration variables from database onto sign, set poll = 0
+
+}
+
+slog("Exiting");
+
+unlink($pidFile);
+
+
+sub sigterm {
+	my $sig = shift;
+	$main::alive = 0;
+	slog("Got sig $sig shutting down");
+}
+
+sub slog {
+	my $logFile = $main::logFile;
+	my $msg = shift;
+
+	open(LOG,">>$logFile");
+	print LOG getTimestamp() . ": " . $msg . "\n";
+	print getTimestamp() . ": " .  $msg . "\n" if($main::debug);
+	close(LOG);
+}
+
+sub getTimestamp {
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
+        return sprintf("%02d/%02d/%04d-%02d:%02d:%02d",$mon+1,$mday,$year+1900,$hour,$min,$sec);
+}
+
+sub btscan {
+	my $dbh = S2dbobj::getHandle();
+	my $bluetooth = new S2Bluetooth();
+	
+	slog("Scanning");
+
+	my $sth = $dbh->prepare("SELECT * FROM signBluetooth");
+
+	$sth->execute();
+	my ($signMac, $signs);
+
+	while(my $x = $sth->fetchrow_hashref()) {
+		$signMac = $x->{'signMac'};
+		$signs->{$signMac} = $x;
+	}
+
+	my $btscan = $bluetooth->getSigns();
+	
+	foreach my $mac (keys %{$btscan}) {
+		slog("btscan found $mac");
+
+		my $name = $btscan->{$mac};
+		my $nameq = $dbh->quote($name);
+
+		if($signs->{$mac}) {
+			$id = $signs->{$mac}->{'signBluetoothId'};
+			$dbh->do("UPDATE signBluetooth SET currentlySeen=1, lastSeen=NOW(), seenAs = $nameq WHERE signBluetoothId = $id");
+			delete $signs->{$mac};
+		} else {
+			$macq = $dbh->quote($mac);
+
+			$dbh->do("INSERT INTO signBluetooth SET signMac = $macq, firstSeen=NOW(), lastSeen=NOW(), currentlySeen=1, seenAs = $nameq");
+			($signId) = $dbh->selectrow_array("SELECT LAST_INSERT_ID()");
+		}
+
+	}
+	foreach $mac (keys %{$signs}) {
+		slog("did not see $mac");
+		$id = $signs->{$mac}->{'signBluetoothId'};
+		$dbh->do("UPDATE signBluetooth set currentlySeen=0 WHERE signBluetoothId = $id");
+	}
+}
+

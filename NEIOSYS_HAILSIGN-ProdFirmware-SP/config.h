@@ -32,7 +32,10 @@ typedef struct
   char *upgradeURL;
   char *sigURL;
   int signWidth;
-  
+  int detectedSignWidth;
+  char isMaster; 
+  int seq;
+  unsigned int scrollSpeed; 
 } CONFIG;
 
 CONFIG signConfig;

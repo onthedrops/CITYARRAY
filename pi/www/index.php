@@ -193,7 +193,7 @@ function showPreset($presetId) {
 	$messageArray = User::getInstance()->getMessages();
 	$signMessageArray = User::getInstance()->getPreset($presetId);
 	
-	//print_r($signMessageArray);
+//	print_r($signArray);
 	echo "<FORM METHOD=POST>";
 	foreach ($signArray as $signId => $signName) {
 		

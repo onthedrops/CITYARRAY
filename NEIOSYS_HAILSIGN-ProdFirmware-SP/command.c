@@ -27,6 +27,8 @@ void processCommand(char *string)
                      sendBT(string);
                      sendlineBT("]"); return;
             case 'S': comamnd_set_key(string); return;  
+            case 'p': command_programming_mode(string); return;
+            case 'x': command_programming_exit(); return;
          //   case 'D': command_delete_key(string); return;
             case 'G': comamnd_get_key(string); return;
             case 'M': command_set_message(string); return; 
@@ -152,6 +154,35 @@ void command_reboot(char *string) {
   }
 }
 
+void command_programming_exit() {
+  if(networkState < 4) {
+    sendlineBT("-ERR not in programming mode");
+    return;
+  }
+    
+  newMessage = 1;
+  sprintf(workstring, "PrgModeEnd");
+}
+
+void command_programming_mode(char *string) {
+  if(strcmp(string, "p xyzzy")) {
+     sendBT("-ERR incorrect password: [");
+     sendBT(string);
+     sendlineBT("]"); return;
+  } else {
+    const uint8_t* point = esp_bt_dev_get_address();
+    char str[20] = "";
+    
+    for(int i=0;i<6;i++) {
+      sprintf(str, "%s%02X", str, (int)point[i]);      
+    }
+    
+    newMessage = 1;
+    networkState = 4;
+    sprintf(workstring, "%s", str);
+  }
+}
+
 void command_format(char *string) {
   if(strcmp(string,"F xyzzy")) {
     sendBT("-ERR incorrect password: [");
@@ -176,7 +207,6 @@ void command_upgrade(char *string) {
     sendlineBT("+OK commanding firmware update");
     networkState = 3;    
 #else    
-   
     do_firmware_upgrade();
     openBT();
 #endif    
@@ -202,7 +232,7 @@ void command_info() {
   sendlineBT(workbuf);
   sprintf(workbuf, "Current screen %d max screen %d", currentScreen, maxScreen);
   sendlineBT(workbuf);
-  sprintf(workbuf, "Sign width %d", signConfig.signWidth);
+  sprintf(workbuf, "Sign width %d Detected sign width %d", signConfig.signWidth, signConfig.detectedSignWidth);
   sendlineBT(workbuf);
   /*sprintf(workbuf, "Master buffer: [%s]", outputstring);
   

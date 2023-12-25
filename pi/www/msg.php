@@ -55,19 +55,20 @@
 		exit(0);
 	}
 
-	if($signVersion != $_REQUEST['ver']) {
+	if(isset($_REQUEST['ver']) && $signVersion != $_REQUEST['ver']) {
 		$signVersionq = $dbh->equote($_REQUEST['ver']);
 		$dbh->Query("UPDATE signs SET signVersion = $signVersionq WHERE signId = $signId");
 	}
 
-	if($_REQUEST['ver'] != firmware_version()) {
+	if(isset($_REQUEST['ver']) && $_REQUEST['ver'] != firmware_version()) {
 		$dbh->Query("SELECT configValue FROM signConfig WHERE signId = $signId AND configKey = 'auto'");
-		$dbh->next_record();
+		if($dbh->next_record()) {
 		$auto = $dbh->f("configValue");
 
-		if($auto) {
-			echo '~!UPGRADE' . "\n";
-			exit(0);
+			if($auto) {
+				echo '~!UPGRADE' . "\n";
+				exit(0);
+			}
 		}
 	}
 	
@@ -79,9 +80,57 @@
 
 	// step 3 - find messageId for sign
 
+	$seqMode = 0;
+
+	if(isset($_REQUEST['seq'])) {
+		// specialized sleep version
+		// enable seq mode
+
+		$seqMode = 1;
+		// step 1: if seq is <= our last seen seq,
+		// fall through immediately
+		$dbh->Query("SELECT sequenceId, messageId FROM signSequence WHERE signId = $signId");
+		$dbh->next_record();
+
+		$lastSeenSequence = $dbh->f("sequenceId");
+		$lastSeenMessage = $dbh->f("messageId");
+			
+		if($lastSeenSequence == null || ($_REQUEST['seq'] > $lastSeenSequence)) {
+
+			// check to see if messageId is different than last
+			// transmitted message
+			$continue = 1;
+			$count = 0;
+
+			while($continue) {
+
+				$currentMessage = $dbh->selectOne("SELECT messageId FROM signMessage WHERE signId = $signId");
+
+				if($lastSeenMessage == null || $lastSeenMessage != $currentMessage) {
+					$continue = 0;
+				} 
+
+				if($count++ == 300) {
+					header($_SERVER['SERVER_PROTOCOL'] . ' 204 no new content', true, 204);
+					exit(0);
+				}
+
+				if(connection_status() != 0) {      // Client aborted/disconnected abruptly
+					exit(0);	
+				}
+				
+				usleep(100000);
+			}
+
+		}
+
+	}
+
+	
 	$dbh->Query("SELECT messageId, firstShownDate FROM signMessage WHERE signId = $signId");
-	$dbh->next_record();
-	if(!$dbh->f("messageId")) {
+	$ok = $dbh->next_record();
+
+	if(! $ok || !$dbh->f("messageId")) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 no current message', true, 500);
 		exit(0);
 	}
@@ -90,11 +139,17 @@
 	$messageId = $dbh->f("messageId");
 	$additionalSQL = "";
 
-	if(!$dbh->f("firstShownDate")) {
+	if(!$ok || !$dbh->f("firstShownDate")) {
 		$additionalSQL = ",firstShownDate=NOW()";
 	}	
 	
 	$dbh->Query("UPDATE signMessage SET lastShownDate=NOW() $additionalSQL");
+
+
+	if($seqMode) {
+		$seq = intval($_REQUEST['seq']);
+		$dbh->Query($sql = "REPLACE INTO signSequence SET sequenceId=$seq, messageId=$messageId,signId = $signId");
+	} 
 
 	$message = $dbh->selectOne("SELECT message FROM messages WHERE messageId = $messageId");
 	echo $message;

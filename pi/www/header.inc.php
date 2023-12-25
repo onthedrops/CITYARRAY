@@ -14,6 +14,10 @@ if($_SESSION['userId']) {
 	exit(0);
 }
 
+global $noheader;
+if($noheader != 1)
+	drawHeader();
+
 function noCache() {
         header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
         header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -21,3 +25,15 @@ function noCache() {
         header("Cache-Control: post-check=0, pre-check=0", false);
         header("Pragma: no-cache");
 }
+
+function drawHeader() {
+	echo "<A HREF=/>Main</A>&nbsp;&nbsp;";
+
+	if(is_dir('/home/pi')) {
+		echo "<A HREF=/configSign.php>Configure Signs</A>&nbsp;&nbsp;<A HREF=/pollSign.php>Debug Signs</A>&nbsp;&nbsp;<A HREF=/update.php>Update</A>&nbsp;&nbsp;<A HREF=/log.php>Logs</A>&nbsp;&nbsp;<A HREF=/remote.php>Remote Support</A>&nbsp;&nbsp;<A HREF=/program.php>Program sign</A>&nbsp;&nbsp;<A HREF=/net.php>pi eth addr</A>";
+	}
+		
+	echo "<HR>";
+
+}
+

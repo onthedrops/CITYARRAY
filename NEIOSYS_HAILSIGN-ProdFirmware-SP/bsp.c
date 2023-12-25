@@ -46,31 +46,69 @@ void BSP_Initialize(void)
   pinMode(DATA_RETURN_PIN, INPUT);
   shift_registers_clear(); 
   vled_off();
-  // first, write out zeros
-  digitalWrite(DATA_RED_PIN, LOW);
-  int i;
   
-  for(i=0;i<256;i++) {
-    digitalWrite(DATA_CLK_PIN, HIGH);
-    digitalWrite(DATA_CLK_PIN, LOW);
-  }
-
-  digitalWrite(DATA_RED_PIN, HIGH);
-  for(i=0;i<256;i++) {
-    digitalWrite(DATA_CLK_PIN, HIGH);
-    digitalWrite(DATA_CLK_PIN, LOW);
-    if(digitalRead(DATA_RETURN_PIN) == HIGH)
-      break;
-  }
-
-  if(i<200)
-    signConfig.signWidth = i + 1;
+  signConfig.detectedSignWidth = getSignWidth();
+    
+  if(signConfig.detectedSignWidth<200)
+    signConfig.signWidth = signConfig.detectedSignWidth + 1;
     else signConfig.signWidth = DEFAULT_SIGN_RESOLUTION_X;
 
    shift_registers_clear(); 
 
 }
 
+int getSignWidth() {
+  int readSignWidth;
+  int i, j;
+  int ok = 1;
+  int width = 0;
+
+  for(i=0;i<15;i++) {
+     ok = 1;
+    for(j=0;j<10;j++) {
+      delay(25);
+      shift_registers_clear(); 
+
+      if(width) {
+        if(width != checkSignWidth()) {
+          ok = 0;
+          width = 0;
+        }
+      } else {
+        width = checkSignWidth();
+      }
+    }
+    if(ok)
+      return(width);
+  }
+
+  return 256;
+}
+
+
+int checkSignWidth() {
+  digitalWrite(DATA_RED_PIN, LOW);
+  int i;
+  
+  for(i=0;i<512;i++) {
+    digitalWrite(DATA_CLK_PIN, HIGH);
+    ets_delay_us(1);
+    digitalWrite(DATA_CLK_PIN, LOW);
+  }
+
+   digitalWrite(DATA_RED_PIN, HIGH);
+  for(i=0;i<256;i++) {
+    digitalWrite(DATA_CLK_PIN, HIGH);
+    ets_delay_us(1);
+    digitalWrite(DATA_CLK_PIN, LOW);
+    ets_delay_us(1);
+    if(digitalRead(DATA_RETURN_PIN) == HIGH)
+      break;
+  }
+
+  return i;
+
+}
 /*******************************************************************************
   Function:
     void turn_on_row(unsigned int x)

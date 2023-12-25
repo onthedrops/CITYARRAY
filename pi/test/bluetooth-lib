@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+use Data::Dumper;
+
+push(@INC,'/home/sign-firmware/pi/lib');
+
+require S2Bluetooth;
+
+
+my $bt = new S2Bluetooth;
+
+#my $signs = $bt->getSigns();
+#print Dumper($signs);
+#$addr = 'C4:4F:33:58:B6:FB';
+$addr = '34:AB:95:F4:8F:EE';
+$bt->Connect($addr);
+
+#$v = $bt->getVersion();
+#print "Version: $v\n";
+
+#$v = $bt->getConfigValue('fetchHost');
+print "GetInfo\n";
+$v = $bt->getInfo();
+print "Value: $v\n";
+print "Buffer: " . $bt->{'buffer'} . "\n";
+
+#$bt->programmingMode();
+
+
+
+
+

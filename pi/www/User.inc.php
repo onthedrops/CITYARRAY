@@ -12,6 +12,12 @@ class User {
 	private function __construct()
 	{
         	$this->dbh = new SQLng();
+		if(isset($_REQUEST['apikey']) && $_REQUEST['apikey']) {
+			$userId = $this->dbh->selectOne("SELECT userId FROM apiKeys WHERE apiKey = " . $this->dbh->equote($_REQUEST['apikey']));
+			if($userId) 
+				$this->userId = $userId;
+
+		}
 	}
 
 	public function requestShutdown($mode=1)
@@ -60,9 +66,36 @@ class User {
 		return $ret;
 	}
 
+	public function ownsGroup($groupId)
+	{
+		if(!$this->userId)
+			return false;
+
+		if(!is_numeric($groupId))
+			return false;
+
+		$rsignId = $this->dbh->selectOne("SELECT s.signId FROM signs s, signsXnetworks sn, usersXnetworks un, signsXgroups sg WHERE s.signId = sn.signId AND sn.networkId = un.networkId AND sg.signId = s.signId AND sg.groupId = $groupId AND un.userId = " . $this->userId);
+		
+		if($rsignId)
+			return true;
+
+		return false;
+		
+	}
+
 	public function owns($signId)
 	{
 		// todo : make sure user is allowed to access sign
+		if(!$this->userId)
+			return false;
+
+		if(!$signId)
+			return false;
+
+		$rsignId = $this->dbh->selectOne("SELECT s.signId FROM signs s, signsXnetworks sn, usersXnetworks un WHERE s.signId = sn.signId AND sn.networkId = un.networkId AND un.userId = " . $this->userId . " and s.signId = $signId");
+
+		if(!$rsignId)
+			return false;
 
 		return true;
 	}
@@ -301,7 +334,7 @@ class User {
 
 		$dbh = $user->dbh;
 		$dbh->Query("INSERT INTO signMessageArchive SET signId = $signId, messageId=$messageId,setDate=NOW()");
-		$dbh->Query("UPDATE signMessage SET setDate=NOW(), messageId = $messageId WHERE signId = $signId");
+		$dbh->Query("REPLACE INTO signMessage SET setDate=NOW(), messageId = $messageId, signId = $signId");
 		$dbh->Query("INSERT INTO signNotifies SET signId=$signId,setTime=NOW(),notified=0");
 
 		// todo: validate input before acting on it!
