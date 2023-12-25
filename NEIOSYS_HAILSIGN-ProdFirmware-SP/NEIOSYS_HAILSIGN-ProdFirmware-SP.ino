@@ -9,6 +9,7 @@
 
 #include <WiFi.h>
 #include <WiFiUdp.h>
+#include <HardwareSerial.h>
 #include "AsyncUDP.h"
 
 #include <HTTPClient.h>
@@ -73,6 +74,7 @@ unsigned long timerDelay = 120000;
 
 BluetoothSerial SerialBT;
 AsyncUDP udp;
+HardwareSerial CascadeSerial(2);
 
 #define T __
 
@@ -101,7 +103,10 @@ void setup()
    // testBitmap2 = Write_String_1Bit("... WAITING FOR NETWORK ... ");
   // todo : change bitmaps to pointers, created size of sign
 
+  
   Serial.begin(115200);
+  CascadeSerial.begin(115200);
+  
   Serial.println("Initializing");
   delay(500);
   
@@ -293,6 +298,18 @@ void loop()
   softDelay++; 
   if (softDelay >= 50000 && BCM_OK()) 
   {
+    if(CascadeSerial.available()) {
+      readchar = CascadeSerial.read();
+   
+      if(readchar == '\n' || readchar == '\r') {
+        processCommand(inputstring);
+        inputPtr = 0;        
+
+      } else {
+        inputstring[inputPtr++] = readchar;
+        inputstring[inputPtr] = '\0';
+      }
+    }
 
     if(SerialBT.available()) {
       readchar = SerialBT.read();
@@ -447,6 +464,10 @@ void sendBT(char *p)
   SerialBT.print(p);
 }
 
+void sendCS(char *p)
+{
+  CascadeSerial.print(p);
+}
 void sendlineBT(char *p)
 {
   SerialBT.println(p);
