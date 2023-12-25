@@ -30,6 +30,7 @@ void processCommand(char *string)
          //   case 'D': command_delete_key(string); return;
             case 'G': comamnd_get_key(string); return;
             case 'M': command_set_message(string); return; 
+            case 'm': command_send_message(string); return;
             case 'R': command_reboot(string); return;
             case 'F': command_format(string); return;
             case 'U': command_upgrade(string); return;
@@ -130,6 +131,15 @@ void command_set_message(char *string) {
 
   newMessage = 1;
   sprintf(workstring, "%s", msgptr);
+}
+
+void command_send_message(char *string) {
+    char tmp[80];
+    
+    char *msgptr = string+2;
+    sprintf(tmp, "M %s\n", msgptr);
+    sendCS(tmp);
+    sendBT("+ sent to slave sign [");    
 }
 
 void command_reboot(char *string) {

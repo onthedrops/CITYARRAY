@@ -23,6 +23,7 @@ extern "C" {
 void processCommand(char *string);
 
 extern void sendBT(char *string);
+extern void sendCS(char *string);
 extern void sendlineBT(char *string);
 extern void openBT();
 extern void closeBT();

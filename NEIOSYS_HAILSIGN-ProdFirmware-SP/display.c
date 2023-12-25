@@ -35,7 +35,7 @@ Copyright (c)
 #include "impact_font.h"
 //#include "ChunkFive-Regular_font.h"
 
-#define SCROLLOG 1
+//#define SCROLLOG 1
 
 
 // *****************************************************************************
