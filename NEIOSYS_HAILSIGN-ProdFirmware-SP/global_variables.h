@@ -71,7 +71,7 @@ extern "C" {
 #define BRIGHTNESS_PRECISION_BITS 4
 #define BRIGHTNESS_PRECISION_BITS_MINUS_1 3
 
-#define SIGN_VERSION "0.16.34"
+#define SIGN_VERSION "0.16.35"
 #define SCREEN_BUFFER_COUNT 8
 
 void slog(char *fmt, ...);

@@ -208,6 +208,7 @@ void networkTask(void * pvParameters) {
                           slog("Already connected, jumping to 2");
                           networkState = 2;             
                         } else {
+                          WiFi.setSleep(false);
                           WiFi.begin(signConfig.ssid, signConfig.password);
                           uint8_t macAddress_v[6];
                           WiFi.macAddress(macAddress_v);
@@ -249,6 +250,7 @@ void networkTask(void * pvParameters) {
 
 //                          http.begin(signConfig.fetchHost);
                           http.begin(workbuf);
+                          http.setConnectTimeout(1000);
                           http.setTimeout(31000);
                           slog("Fetching from %s\n", workbuf);
                         
@@ -266,7 +268,7 @@ void networkTask(void * pvParameters) {
                               workstring[payload.length()+1] = 0;
                               newMessage = 1;
                             }
-                          } 
+                          }
                       
                          http.end();
                        }
