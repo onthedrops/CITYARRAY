@@ -208,7 +208,7 @@ void networkTask(void * pvParameters) {
                           slog("Already connected, jumping to 2");
                           networkState = 2;             
                         } else {
-                          WiFi.setSleep(false);
+                         // WiFi.setSleep(false);
                           WiFi.begin(signConfig.ssid, signConfig.password);
                           uint8_t macAddress_v[6];
                           WiFi.macAddress(macAddress_v);
@@ -533,6 +533,7 @@ void openBT()
 #ifdef _XDEBUG
  slog("openBT starting");
 #endif
+
  SerialBT.begin(signConfig.bluetoothID);   
 #ifdef _XDEBUG
  slog("openBT returning");
