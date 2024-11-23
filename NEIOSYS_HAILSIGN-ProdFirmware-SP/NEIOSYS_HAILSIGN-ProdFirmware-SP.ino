@@ -72,8 +72,11 @@ DISPLAY_BITMAP_1BIT emptyBitmap1BitGreen = { emptyBitmapGreen, 16, 64 };
 uint8_t gBrightness = 0x0F;
 uint8_t rBrightness = 0x0F;
 
+unsigned long startTime = 0;
 unsigned long lastTime = 0;
 unsigned long timerDelay = 10;
+bool btEnabled= false;
+bool btNowInUse = false;
 
 BluetoothSerial SerialBT;
 AsyncUDP udp;
@@ -224,6 +227,7 @@ void networkTask(void * pvParameters) {
                     if(WiFi.status() == WL_CONNECTED) {
                         execNow = 1; // we need to connect once so remote end knows our IP address
                         networkState = 2; 
+                        startTime = millis();
                         udp.listen(1234);
                         udp.onPacket([](AsyncUDPPacket packet) {
                           execNow = 1;
@@ -238,7 +242,9 @@ void networkTask(void * pvParameters) {
                     
                     break;     
           case 2:  
-                      
+                      if(btEnabled && (btNowInUse != true) && (millis() - startTime) > 120000) {
+                        disableBT(); 
+                      }
                       if (execNow == 1 || ((millis() - lastTime) > timerDelay)) {
                         if(WiFi.status() != WL_CONNECTED) {
                           networkState = 0;
@@ -340,6 +346,8 @@ void loop()
     }
 
     if(SerialBT.available()) {
+      
+      btNowInUse = true;
       readchar = SerialBT.read();
  
       if(readchar == '\n' || readchar == '\r') {
@@ -505,7 +513,8 @@ void slog(char *fmt, ...)
 
 void sendBT(char *p)
 {
-  SerialBT.print(p);
+  if(btEnabled)
+    SerialBT.print(p);
 }
 
 void sendCS(char *p)
@@ -514,6 +523,7 @@ void sendCS(char *p)
 }
 void sendlineBT(char *p)
 {
+  if(btEnabled)
   SerialBT.println(p);
 }
 
@@ -528,13 +538,22 @@ void closeBT()
   SerialBT.end();
 }
 
+void disableBT()
+{
+  SerialBT.end();
+  WiFi.setSleep(false);
+  btEnabled = false;
+  slog("disableBT called");
+}
 void openBT()
 {
 #ifdef _XDEBUG
  slog("openBT starting");
 #endif
 
- SerialBT.begin(signConfig.bluetoothID);   
+ WiFi.setSleep(true);
+ SerialBT.begin(signConfig.bluetoothID); 
+ btEnabled = true;  
 #ifdef _XDEBUG
  slog("openBT returning");
 #endif
