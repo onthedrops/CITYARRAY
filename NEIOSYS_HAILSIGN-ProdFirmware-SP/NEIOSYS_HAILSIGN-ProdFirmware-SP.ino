@@ -261,10 +261,14 @@ void networkTask(void * pvParameters) {
                           slog("Fetching from %s\n", workbuf);
                         
                           int httpResponseCode = http.GET();
+                          int contentLength = http.getSize();
 
                           if(httpResponseCode == 204) {
                             // do not incrmeent seq
                           } else if (httpResponseCode == 200) {
+                            if(contentLength > HTTP_INBUF_SIZE) {
+                              slog("Warning - length too long: %d", contentLength);
+                            } else {
                             String payload = http.getString();
                             // increment seq
                             signConfig.seq++;
@@ -273,6 +277,7 @@ void networkTask(void * pvParameters) {
                               payload.toCharArray((char *)workstring,payload.length()+1);
                               workstring[payload.length()+1] = 0;
                               newMessage = 1;
+                              }
                             }
                           }
                       
